@@ -23,7 +23,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }, {
       before(done) {
         (async () => {
-          await loadTemplate("home.html", document.getElementById('app'));
+          await loadTemplate("home-fe919dfbe925337c176e602ebbf0d15c.html", document.getElementById('app'));
           // await loadGameList();
           done();
         })();
@@ -34,7 +34,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }, {
       before(done, match) {
         (async () => {
-          await loadTemplate("foryou.html", document.getElementById('app'));
+          await loadTemplate("foryou-0e0d86d8d7a562d1f55cda30bc4605bd.html", document.getElementById('app'));
 
           done();
         })();
@@ -45,7 +45,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }, {
       before(done, match) {
         (async () => {
-          await loadTemplate("messages.html", document.getElementById('app'));
+          await loadTemplate("messages-e76010136e682a7bfe67a5ebf9d8fb1f.html", document.getElementById('app'));
 
           done();
         })();
@@ -56,7 +56,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }, {
       before(done, match) {
         (async () => {
-          await loadTemplate("profile.html", document.getElementById('app'));
+          await loadTemplate("profile-523c1673f282115d217384692005e943.html", document.getElementById('app'));
 
           done();
         })();
