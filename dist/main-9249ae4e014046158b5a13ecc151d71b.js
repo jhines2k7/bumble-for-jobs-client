@@ -23,10 +23,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }, {
       before(done) {
         (async () => {
-          await loadTemplate("home.html", document.getElementById('app'));
-          await loadTemplate("footer.html", document.getElementById('footer'));
+          await loadTemplate("home-7aaaad2c6390698810e0a82353682c12.html", document.getElementById('app'));
+          await loadTemplate("footer-c1683bfcb8f76eef82e185637d339f82.html", document.getElementById('footer'));
           
-          await loadTemplate("header.html", document.getElementById('header'));
+          await loadTemplate("header-bd13752495b2c47b0fd2e74782738d9a.html", document.getElementById('header'));
           document.querySelector('#header h1').textContent = 'Home';
           // await loadGameList();
           done();
@@ -38,10 +38,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }, {
       before(done, match) {
         (async () => {
-          await loadTemplate("foryou.html", document.getElementById('app'));
-          await loadTemplate("footer.html", document.getElementById('footer'));
+          await loadTemplate("foryou-493afa6410a8db0d605da4c939ad1c67.html", document.getElementById('app'));
+          await loadTemplate("footer-c1683bfcb8f76eef82e185637d339f82.html", document.getElementById('footer'));
           
-          await loadTemplate("header.html", document.getElementById('header'));
+          await loadTemplate("header-bd13752495b2c47b0fd2e74782738d9a.html", document.getElementById('header'));
           document.querySelector('#header h1').textContent = 'For You';
           done();
         })();
@@ -52,10 +52,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }, {
       before(done, match) {
         (async () => {
-          await loadTemplate("messages.html", document.getElementById('app'));
-          await loadTemplate("footer.html", document.getElementById('footer'));
+          await loadTemplate("messages-7aaaad2c6390698810e0a82353682c12.html", document.getElementById('app'));
+          await loadTemplate("footer-c1683bfcb8f76eef82e185637d339f82.html", document.getElementById('footer'));
           
-          await loadTemplate("header.html", document.getElementById('header'));
+          await loadTemplate("header-bd13752495b2c47b0fd2e74782738d9a.html", document.getElementById('header'));
           document.querySelector('#header h1').textContent = 'Chats';
           done();
         })();
@@ -66,10 +66,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }, {
       before(done, match) {
         (async () => {
-          await loadTemplate("profile.html", document.getElementById('app'));
-          await loadTemplate("footer.html", document.getElementById('footer'));
+          await loadTemplate("profile-7aaaad2c6390698810e0a82353682c12.html", document.getElementById('app'));
+          await loadTemplate("footer-c1683bfcb8f76eef82e185637d339f82.html", document.getElementById('footer'));
           
-          await loadTemplate("header.html", document.getElementById('header'));
+          await loadTemplate("header-bd13752495b2c47b0fd2e74782738d9a.html", document.getElementById('header'));
           document.querySelector('#header h1').textContent = 'Profile';
           done();
         })();
@@ -80,8 +80,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }, {
       before(done, match) {
         (async () => {
-          await loadTemplate("chat.html", document.getElementById('app'));
-          await loadTemplate("chat-footer.html", document.getElementById('footer'));
+          await loadTemplate("chat-0868d88eeec3e14ad85ebd7526c6f510.html", document.getElementById('app'));
+          await loadTemplate("chat-footer-400a5e6e28faba1c2b23c6d2ca03e52e.html", document.getElementById('footer'));
           
           done();
         })();
