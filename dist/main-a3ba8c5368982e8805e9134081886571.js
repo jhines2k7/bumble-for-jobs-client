@@ -18,7 +18,7 @@ async function loadTemplate(name, element) {
 
 function toggleProfileSettings() {
   (async () => {
-    await loadTemplate("profile-settings.html", document.getElementById('profile-overlay'));
+    await loadTemplate("profile-settings-43cd82aee5feabf2ed1aa92973da3f21.html", document.getElementById('profile-overlay'));
     let profileOverlay = document.getElementById('profile-overlay');
     // set the height of the overlay to 100% of the viewport
     profileOverlay.style.height = '100vh';
@@ -36,9 +36,9 @@ document.addEventListener('DOMContentLoaded', () => {
       before(done) {
         (async () => {
           await loadTemplate("home.html", document.getElementById('app'));
-          await loadTemplate("footer.html", document.getElementById('footer'));
+          await loadTemplate("footer-141e1ce179eeaaeab06447c66876de91.html", document.getElementById('footer'));
           
-          await loadTemplate("header.html", document.getElementById('header'));
+          await loadTemplate("header-b0a04f0dad395bda51e9f1209028fe41.html", document.getElementById('header'));
           document.querySelector('#header h1').textContent = 'Home';
           // await loadGameList();
           done();
@@ -50,10 +50,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }, {
       before(done, match) {
         (async () => {
-          await loadTemplate("foryou.html", document.getElementById('app'));
-          await loadTemplate("footer.html", document.getElementById('footer'));
+          await loadTemplate("foryou-493afa6410a8db0d605da4c939ad1c67.html", document.getElementById('app'));
+          await loadTemplate("footer-141e1ce179eeaaeab06447c66876de91.html", document.getElementById('footer'));
           
-          await loadTemplate("header.html", document.getElementById('header'));
+          await loadTemplate("header-b0a04f0dad395bda51e9f1209028fe41.html", document.getElementById('header'));
           document.querySelector('#header h1').textContent = 'For You';
           done();
         })();
@@ -64,10 +64,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }, {
       before(done, match) {
         (async () => {
-          await loadTemplate("chats.html", document.getElementById('app'));
-          await loadTemplate("footer.html", document.getElementById('footer'));
+          await loadTemplate("chats-7aaaad2c6390698810e0a82353682c12.html", document.getElementById('app'));
+          await loadTemplate("footer-141e1ce179eeaaeab06447c66876de91.html", document.getElementById('footer'));
           
-          await loadTemplate("header.html", document.getElementById('header'));
+          await loadTemplate("header-b0a04f0dad395bda51e9f1209028fe41.html", document.getElementById('header'));
           document.querySelector('#header h1').textContent = 'Chats';
           done();
         })();
@@ -78,10 +78,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }, {
       before(done, match) {
         (async () => {
-          await loadTemplate("dailypicks.html", document.getElementById('app'));
-          await loadTemplate("footer.html", document.getElementById('footer'));
+          await loadTemplate("dailypicks-7aaaad2c6390698810e0a82353682c12.html", document.getElementById('app'));
+          await loadTemplate("footer-141e1ce179eeaaeab06447c66876de91.html", document.getElementById('footer'));
           
-          await loadTemplate("header.html", document.getElementById('header'));
+          await loadTemplate("header-b0a04f0dad395bda51e9f1209028fe41.html", document.getElementById('header'));
           document.querySelector('#header h1').textContent = 'Daily Picks';
           done();
         })();
@@ -92,8 +92,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }, {
       before(done, match) {
         (async () => {
-          await loadTemplate("chat.html", document.getElementById('app'));
-          await loadTemplate("chat-footer.html", document.getElementById('footer'));
+          await loadTemplate("chat-e0572855ca0ffaccc95791189fcafcaa.html", document.getElementById('app'));
+          await loadTemplate("chat-footer-400a5e6e28faba1c2b23c6d2ca03e52e.html", document.getElementById('footer'));
           
           done();
         })();
@@ -104,7 +104,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }, {
       before(done, match) {
         (async () => {
-          await loadTemplate("profile.html", document.getElementById('app'));
+          await loadTemplate("profile-7aaaad2c6390698810e0a82353682c12.html", document.getElementById('app'));
           
           done();
         })();
