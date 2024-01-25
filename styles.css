@@ -36,10 +36,12 @@ body {
   flex: 1;
 }
 .percentage {
-  font-size: 300px;
+  font-size: 250px;
   line-height: 1;
   font-weight: bold;
-  margin: 20px 0;
+  margin: 20px auto;
+  width: 100%;
+  text-align: center;
 }
 .percentage span {
   font-size: 25px;
@@ -82,6 +84,10 @@ body {
   line-height: 50px; /* Aligns the text vertically */
   cursor: pointer; /* Changes the cursor to a pointer on hover */
 }
+.round-button.user-settings {
+  width: 25px;
+  height: 25px;
+}
 .dislike {
   background-color: dimgray;
   width: 40px;
@@ -98,13 +104,15 @@ body {
   display: flex;
   position: fixed;
   align-items: center;
-  justify-content: space-between;
+  justify-content: space-around;
+  left: 0;
   bottom: 70px;
-  width: 400px;
+  width: 100%;
 }
 #chat-input {
   background-color: aliceblue;
   bottom: 60px;
+  padding: 10px 0;
 }
 .user-interaction-options {
   display: flex;
@@ -119,7 +127,7 @@ body {
   font-weight: 600;
   text-align: center;
 }
-#header .avatar {
+#header .avatar, #preferences-profile .avatar {
   width: 40px;
   min-width: 40px;
   height: 40px;
@@ -127,6 +135,45 @@ body {
   border-radius: 50%;
   background-color: lightskyblue;
   border: #3a4150 2px solid;
+}
+#preferences-profile .avatar {
+  width: 100px;
+  height: 100px;
+  margin: 0 auto;
+  border: #3a4150 5px solid;
+}
+#preferences-profile {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+#preferences-profile h1 {
+  text-align: center;
+  margin: 20px 0 0 0;
+}
+#preferences-profile .customize {
+  display: flex;
+  justify-content: space-between;
+  margin: 20px auto;
+  width: 75%;
+}
+#profile-overlay {
+  width: 300px;
+  background-color: lightcyan;
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 200;
+  transition: transform 0.5s ease;
+}
+.move-right {
+  transform: translateX(300px); /* Move the element 300px to the right */
+}
+.settings {
+  display: flex;
+  justify-content: flex-end;
+  width: 90%;
+  margin: 20px 0 20px 0;
 }
 /* chat */
 #chat-input input {
@@ -147,9 +194,12 @@ body {
 .chat-title {
   position: fixed;
   top: 0;
-  width: 400px;
+  left: 0;
   z-index: 100;
   background-color: aliceblue;
+  padding: 15px 0;
+  text-align: center;
+  width: 100%;
 }
 .chat-title a {
   font-size: larger;
@@ -157,11 +207,11 @@ body {
   font-weight: bold;
 }
 #chat-zone {
-  margin: 40px 0 0 0;
+  margin: 60px 0 0 0;
   background: 0 0;
   overflow: auto;
   -webkit-overflow-scrolling: touch;
-  padding: 0 0 100px 0;
+  padding: 0 0 120px 0;
 }
 
 #chat-zone .chat-messages .message-item {
