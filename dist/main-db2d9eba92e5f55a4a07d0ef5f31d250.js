@@ -1,5 +1,3 @@
-const { init } = require("events");
-
 const router = new Navigo('/', { hash: true });
 let profileMenu = document.getElementById('profile-menu');
 let hammer = new Hammer(profileMenu);
@@ -59,14 +57,14 @@ function toggleProfileMenu() {
 
     hammer.on('panend', function(e) {
       // snap back to initial position if the element is dragged less than 300px to the left
-      console.log(`newPosition in panstop: ${newPosition}`);
+      console.log(`newPosition in panend: ${newPosition}`);
       if(newPosition > -450) {
         profileMenu.style.left = '-300px';
       }
 
       if(newPosition <= -450) {
         overlay.remove();
-        profileMenu.classList.toggle('move-right');
+        profileMenu.classList.remove('move-right');
         // document.getElementById('profile-menu').innerHTML = '';
       }
 
