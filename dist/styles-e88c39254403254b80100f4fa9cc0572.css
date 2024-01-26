@@ -46,7 +46,7 @@ body {
 .percentage span {
   font-size: 25px;
 }
-#footer {
+.footer {
   position: fixed;
   left: 0;
   right: 0;
@@ -158,8 +158,6 @@ body {
   width: 75%;
 }
 #profile-menu {
-  width: 300px;
-  background-color: lightcyan;
   position: fixed;
   left: 0;
   top: 0;
@@ -168,6 +166,12 @@ body {
   user-select: none;
   touch-action: none;
 }
+#profile-menu .menu{
+  width: 300px;
+  background-color: lightcyan;
+  height: 100vh;
+  padding: 20px 0 0 0;
+}
 .move-right {
   transform: translateX(300px); /* Move the element 300px to the right */
 }
@@ -175,7 +179,20 @@ body {
   display: flex;
   justify-content: flex-end;
   width: 90%;
-  margin: 20px 0 20px 0;
+  margin: 0 0 20px 0;
+}
+.profile {
+  background-color: lightslategray;
+  width: 100%;
+}
+.profile .upload-area {
+  width: 90%;
+  height: 100px;
+  border: 2px dashed black;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 20px auto;
 }
 /* chat */
 #chat-input input {

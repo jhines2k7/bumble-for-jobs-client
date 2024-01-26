@@ -1,4 +1,8 @@
+const { init } = require("events");
+
 const router = new Navigo('/', { hash: true });
+let profileMenu = document.getElementById('profile-menu');
+let hammer = new Hammer(profileMenu);
 
 async function loadTemplate(name, element) {
   return fetch(`templates/${name}`)
@@ -24,7 +28,6 @@ function navigateToLastResolved() {
 function toggleProfileMenu() {
   (async () => {
     await loadTemplate("profile-menu.html", document.getElementById('profile-menu'));
-    let profileMenu = document.getElementById('profile-menu');
 
     // create a transparent overlay to prevent scrolling and clicking
     let overlay = document.createElement('div');
@@ -43,36 +46,42 @@ function toggleProfileMenu() {
     overlay.addEventListener('click', () => {
       // remove the overlay
       overlay.remove();
-      // remove the profile overlay
       profileMenu.classList.toggle('move-right');
     });
     // append the overlay to the body
     document.body.appendChild(overlay);
 
-    // set the height of the overlay to 100% of the viewport
-    profileMenu.style.height = '100vh';
-    // position the overlay to the left of the screen
     profileMenu.style.left = '-300px';
     profileMenu.classList.toggle('move-right');
 
-    // Create a new instance of Hammer on the element
-    var hammer = new Hammer(profileMenu);
+    let initialPosition = -300;
+    let newPosition = 0;
 
-    // Specify the options if necessary (e.g., to define velocity and threshold for swipes)
-    hammer.get('swipe').set({
-      direction: Hammer.DIRECTION_LEFT, // Enable detection of swipes in all directions
-      threshold: 1, // Minimum distance in pixels the swipe must travel to be recognized
-      velocity: 0.1 // Minimum velocity the swipe must travel to be recognized
+    hammer.on('panend', function(e) {
+      // snap back to initial position if the element is dragged less than 300px to the left
+      console.log(`newPosition in panstop: ${newPosition}`);
+      if(newPosition > -450) {
+        profileMenu.style.left = '-300px';
+      }
+
+      if(newPosition <= -450) {
+        overlay.remove();
+        profileMenu.classList.toggle('move-right');
+        // document.getElementById('profile-menu').innerHTML = '';
+      }
+
+      // initialPosition = -300;
     });
 
-    // Add event listeners for the swipe events you want to detect
-    hammer.on("swipeleft", function (ev) {
-      // Your logic for each swipe direction
-      switch (ev.type) {
-        case 'swipeleft':
-          console.log('Swiped left');
-          profileOverlay.classList.toggle('move-right');
-          break;
+    hammer.on('panmove', function(e) {
+      // Calculate the new position
+      newPosition = initialPosition + e.deltaX;
+      console.log(`newPosition in panmove: ${newPosition}`);
+
+      // Restrict movement to 300px to the left
+      if (newPosition <= initialPosition) {
+        // Update the element's position
+        profileMenu.style.left = newPosition + 'px';
       }
     });
   })();

@@ -1,4 +1,8 @@
+const { init } = require("events");
+
 const router = new Navigo('/', { hash: true });
+let profileMenu = document.getElementById('profile-menu');
+let hammer = new Hammer(profileMenu);
 
 async function loadTemplate(name, element) {
   return fetch(`templates/${name}`)
@@ -18,13 +22,12 @@ async function loadTemplate(name, element) {
 
 function navigateToLastResolved() {
   window.history.back();
-  toggleProfileSettings();
+  toggleProfileMenu();
 }
 
-function toggleProfileSettings() {
+function toggleProfileMenu() {
   (async () => {
-    await loadTemplate("profile-menu-fda0ae557271b50cdc1e80233440a63b.html", document.getElementById('profile-menu'));
-    let profileMenu = document.getElementById('profile-menu');
+    await loadTemplate("profile-menu-d5f0385b81dfb67f87448af9a8883dad.html", document.getElementById('profile-menu'));
 
     // create a transparent overlay to prevent scrolling and clicking
     let overlay = document.createElement('div');
@@ -43,36 +46,42 @@ function toggleProfileSettings() {
     overlay.addEventListener('click', () => {
       // remove the overlay
       overlay.remove();
-      // remove the profile overlay
       profileMenu.classList.toggle('move-right');
     });
     // append the overlay to the body
     document.body.appendChild(overlay);
 
-    // set the height of the overlay to 100% of the viewport
-    profileMenu.style.height = '100vh';
-    // position the overlay to the left of the screen
     profileMenu.style.left = '-300px';
     profileMenu.classList.toggle('move-right');
 
-    // Create a new instance of Hammer on the element
-    var hammer = new Hammer(profileMenu);
+    let initialPosition = -300;
+    let newPosition = 0;
 
-    // Specify the options if necessary (e.g., to define velocity and threshold for swipes)
-    hammer.get('swipe').set({
-      direction: Hammer.DIRECTION_LEFT, // Enable detection of swipes in all directions
-      threshold: 1, // Minimum distance in pixels the swipe must travel to be recognized
-      velocity: 0.1 // Minimum velocity the swipe must travel to be recognized
+    hammer.on('panend', function(e) {
+      // snap back to initial position if the element is dragged less than 300px to the left
+      console.log(`newPosition in panstop: ${newPosition}`);
+      if(newPosition > -450) {
+        profileMenu.style.left = '-300px';
+      }
+
+      if(newPosition <= -450) {
+        overlay.remove();
+        profileMenu.classList.toggle('move-right');
+        // document.getElementById('profile-menu').innerHTML = '';
+      }
+
+      // initialPosition = -300;
     });
 
-    // Add event listeners for the swipe events you want to detect
-    hammer.on("swipeleft", function (ev) {
-      // Your logic for each swipe direction
-      switch (ev.type) {
-        case 'swipeleft':
-          console.log('Swiped left');
-          profileOverlay.classList.toggle('move-right');
-          break;
+    hammer.on('panmove', function(e) {
+      // Calculate the new position
+      newPosition = initialPosition + e.deltaX;
+      console.log(`newPosition in panmove: ${newPosition}`);
+
+      // Restrict movement to 300px to the left
+      if (newPosition <= initialPosition) {
+        // Update the element's position
+        profileMenu.style.left = newPosition + 'px';
       }
     });
   })();
@@ -86,9 +95,9 @@ document.addEventListener('DOMContentLoaded', () => {
       before(done) {
         (async () => {
           await loadTemplate("home.html", document.getElementById('app'));
-          await loadTemplate("footer-30e4d4fa61954c634701cc61cb7b3d38.html", document.getElementById('footer'));
+          await loadTemplate("footer-11c9a829e91bc79349c29e61c42c5fb8.html", document.getElementById('footer'));
 
-          await loadTemplate("header-b0a04f0dad395bda51e9f1209028fe41.html", document.getElementById('header'));
+          await loadTemplate("header-c7a43d71033e449e4cf76e454b7df0c2.html", document.getElementById('header'));
           document.querySelector('#header h1').textContent = 'Home';
           // await loadGameList();
           done();
@@ -101,9 +110,9 @@ document.addEventListener('DOMContentLoaded', () => {
       before(done, match) {
         (async () => {
           await loadTemplate("foryou-493afa6410a8db0d605da4c939ad1c67.html", document.getElementById('app'));
-          await loadTemplate("footer-30e4d4fa61954c634701cc61cb7b3d38.html", document.getElementById('footer'));
+          await loadTemplate("footer-11c9a829e91bc79349c29e61c42c5fb8.html", document.getElementById('footer'));
 
-          await loadTemplate("header-b0a04f0dad395bda51e9f1209028fe41.html", document.getElementById('header'));
+          await loadTemplate("header-c7a43d71033e449e4cf76e454b7df0c2.html", document.getElementById('header'));
           document.querySelector('#header h1').textContent = 'For You';
           done();
         })();
@@ -115,9 +124,9 @@ document.addEventListener('DOMContentLoaded', () => {
       before(done, match) {
         (async () => {
           await loadTemplate("chats-7aaaad2c6390698810e0a82353682c12.html", document.getElementById('app'));
-          await loadTemplate("footer-30e4d4fa61954c634701cc61cb7b3d38.html", document.getElementById('footer'));
+          await loadTemplate("footer-11c9a829e91bc79349c29e61c42c5fb8.html", document.getElementById('footer'));
 
-          await loadTemplate("header-b0a04f0dad395bda51e9f1209028fe41.html", document.getElementById('header'));
+          await loadTemplate("header-c7a43d71033e449e4cf76e454b7df0c2.html", document.getElementById('header'));
           document.querySelector('#header h1').textContent = 'Chats';
           done();
         })();
@@ -129,9 +138,9 @@ document.addEventListener('DOMContentLoaded', () => {
       before(done, match) {
         (async () => {
           await loadTemplate("dailypicks-7aaaad2c6390698810e0a82353682c12.html", document.getElementById('app'));
-          await loadTemplate("footer-30e4d4fa61954c634701cc61cb7b3d38.html", document.getElementById('footer'));
+          await loadTemplate("footer-11c9a829e91bc79349c29e61c42c5fb8.html", document.getElementById('footer'));
 
-          await loadTemplate("header-b0a04f0dad395bda51e9f1209028fe41.html", document.getElementById('header'));
+          await loadTemplate("header-c7a43d71033e449e4cf76e454b7df0c2.html", document.getElementById('header'));
           document.querySelector('#header h1').textContent = 'Daily Picks';
           done();
         })();
@@ -142,8 +151,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }, {
       before(done, match) {
         (async () => {
-          await loadTemplate("chat-e0572855ca0ffaccc95791189fcafcaa.html", document.getElementById('app'));
-          await loadTemplate("chat-footer-400a5e6e28faba1c2b23c6d2ca03e52e.html", document.getElementById('footer'));
+          await loadTemplate("chat-3722e1f3fdfa7dc68549ac8cc4589bdb.html", document.getElementById('app'));
+          await loadTemplate("chat-footer-8cb9441ae82b8cbeb26c69a888275874.html", document.getElementById('footer'));
 
           done();
         })();
@@ -154,7 +163,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }, {
       before(done, match) {
         (async () => {
-          await loadTemplate("profile-0a487fce6fc1b85a65fcd8cf67378989.html", document.getElementById('app'));
+          await loadTemplate("profile-20f879d1464507309632ddf196f590ae.html", document.getElementById('app'));
           
           var overlay = document.body.lastElementChild;
           overlay.remove();
