@@ -57,7 +57,6 @@ function toggleProfileMenu() {
 
     hammer.on('panend', function(e) {
       // snap back to initial position if the element is dragged less than 300px to the left
-      console.log(`newPosition in panend: ${newPosition}`);
       if(newPosition > -450) {
         profileMenu.style.left = '-300px';
       }
@@ -70,7 +69,6 @@ function toggleProfileMenu() {
 
     hammer.on('panmove', function(e) {
       newPosition = initialPosition + e.deltaX;
-      console.log(`newPosition in panmove: ${newPosition}`);
 
       if (newPosition <= initialPosition) {
         profileMenu.style.left = newPosition + 'px';
@@ -91,7 +89,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
           await loadTemplate("header.html", document.getElementById('header'));
           document.querySelector('#header h1').textContent = 'Home';
-          // await loadGameList();
           done();
         })();
       }
