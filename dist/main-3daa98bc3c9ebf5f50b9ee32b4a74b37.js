@@ -25,7 +25,7 @@ function navigateToLastResolved() {
 
 function toggleProfileMenu() {
   (async () => {
-    await loadTemplate("profile-menu.html", document.getElementById('profile-menu'));
+    await loadTemplate("profile-menu-d5f0385b81dfb67f87448af9a8883dad.html", document.getElementById('profile-menu'));
 
     // create a transparent overlay to prevent scrolling and clicking
     let overlay = document.createElement('div');
@@ -85,9 +85,9 @@ document.addEventListener('DOMContentLoaded', () => {
       before(done) {
         (async () => {
           await loadTemplate("home.html", document.getElementById('app'));
-          await loadTemplate("footer.html", document.getElementById('footer'));
+          await loadTemplate("footer-11c9a829e91bc79349c29e61c42c5fb8.html", document.getElementById('footer'));
 
-          await loadTemplate("header.html", document.getElementById('header'));
+          await loadTemplate("header-c7a43d71033e449e4cf76e454b7df0c2.html", document.getElementById('header'));
           document.querySelector('#header h1').textContent = 'Home';
           done();
         })();
@@ -98,10 +98,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }, {
       before(done, match) {
         (async () => {
-          await loadTemplate("foryou.html", document.getElementById('app'));
-          await loadTemplate("footer.html", document.getElementById('footer'));
+          await loadTemplate("foryou-5877e585fed88421756386775b3881a4.html", document.getElementById('app'));
+          await loadTemplate("footer-11c9a829e91bc79349c29e61c42c5fb8.html", document.getElementById('footer'));
 
-          await loadTemplate("header.html", document.getElementById('header'));
+          await loadTemplate("header-c7a43d71033e449e4cf76e454b7df0c2.html", document.getElementById('header'));
           document.querySelector('#header h1').textContent = 'For You';
           done();
         })();
@@ -112,10 +112,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }, {
       before(done, match) {
         (async () => {
-          await loadTemplate("chats.html", document.getElementById('app'));
-          await loadTemplate("footer.html", document.getElementById('footer'));
+          await loadTemplate("chats-7aaaad2c6390698810e0a82353682c12.html", document.getElementById('app'));
+          await loadTemplate("footer-11c9a829e91bc79349c29e61c42c5fb8.html", document.getElementById('footer'));
 
-          await loadTemplate("header.html", document.getElementById('header'));
+          await loadTemplate("header-c7a43d71033e449e4cf76e454b7df0c2.html", document.getElementById('header'));
           document.querySelector('#header h1').textContent = 'Chats';
           done();
         })();
@@ -126,10 +126,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }, {
       before(done, match) {
         (async () => {
-          await loadTemplate("dailypicks.html", document.getElementById('app'));
-          await loadTemplate("footer.html", document.getElementById('footer'));
+          await loadTemplate("dailypicks-7aaaad2c6390698810e0a82353682c12.html", document.getElementById('app'));
+          await loadTemplate("footer-11c9a829e91bc79349c29e61c42c5fb8.html", document.getElementById('footer'));
 
-          await loadTemplate("header.html", document.getElementById('header'));
+          await loadTemplate("header-c7a43d71033e449e4cf76e454b7df0c2.html", document.getElementById('header'));
           document.querySelector('#header h1').textContent = 'Daily Picks';
           done();
         })();
@@ -140,8 +140,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }, {
       before(done, match) {
         (async () => {
-          await loadTemplate("chat.html", document.getElementById('app'));
-          await loadTemplate("chat-footer.html", document.getElementById('footer'));
+          await loadTemplate("chat-3722e1f3fdfa7dc68549ac8cc4589bdb.html", document.getElementById('app'));
+          await loadTemplate("chat-footer-8cb9441ae82b8cbeb26c69a888275874.html", document.getElementById('footer'));
 
           done();
         })();
@@ -152,7 +152,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }, {
       before(done, match) {
         (async () => {
-          await loadTemplate("profile.html", document.getElementById('app'));
+          await loadTemplate("profile-78f69384115d1d4930ac27c1d9a9cde8.html", document.getElementById('app'));
 
           var overlay = document.body.lastElementChild;
           overlay.remove();
@@ -239,7 +239,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }, {
       before(done, match) {
         (async () => {
-          await loadTemplate("settings.html", document.getElementById('app'));
+          await loadTemplate("settings-d41d8cd98f00b204e9800998ecf8427e.html", document.getElementById('app'));
 
           done();
         })();
@@ -250,7 +250,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }, {
       before(done, match) {
         (async () => {
-          await loadTemplate("preferences.html", document.getElementById('app'));
+          await loadTemplate("preferences-d41d8cd98f00b204e9800998ecf8427e.html", document.getElementById('app'));
 
           done();
         })();
