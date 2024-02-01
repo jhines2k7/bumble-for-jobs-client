@@ -78,6 +78,12 @@ function toggleProfileMenu() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+  const socket = io('http://159.223.182.13:8080');
+  
+  socket.on('connect', () => {
+    console.log('Connected to the server');
+  });
+
   router
     .on("/", (match) => {
       console.log(`Match value on home route: ${JSON.stringify(match)}`);

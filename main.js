@@ -78,6 +78,12 @@ function toggleProfileMenu() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+  const socket = io('http://159.223.182.13:8080');
+
+  socket.on('connect', () => {
+    console.log('Connected to the server');
+  });
+
   router
     .on("/", (match) => {
       console.log(`Match value on home route: ${JSON.stringify(match)}`);
@@ -168,66 +174,120 @@ document.addEventListener('DOMContentLoaded', () => {
           let fileInput = document.getElementById('file-input');
           let uploadBtn = document.querySelector('.modal-footer .btn-primary'); // document.getElementById('upload-btn');
           let cancelBtn = document.querySelector('.modal-footer .btn-secondary'); // document.getElementById('cancel-btn');
-        
+
           // Highlight drop area when file is dragged over it
           ['dragenter', 'dragover'].forEach(eventName => {
             dropArea.addEventListener(eventName, highlight, false);
           });
-        
+
           ['dragleave', 'drop'].forEach(eventName => {
             dropArea.addEventListener(eventName, unhighlight, false);
           });
-        
+
           // Handle file drop
           dropArea.addEventListener('drop', handleDrop, false);
-        
+
           // Handle file selection via input
-          fileInput.addEventListener('change', function() {
+          fileInput.addEventListener('change', function () {
             handleFiles(this.files);
           }, false);
 
           let fileUploadText = document.querySelector('.upload-area-description strong')
-          
-          fileUploadText.addEventListener('click', function() {
+
+          fileUploadText.addEventListener('click', function () {
             // Trigger the file input when the div is clicked
             fileInput.click();
           });
 
           // Handle the actual upload process
-          uploadBtn.addEventListener('click', function() {
-            if (fileInput.files.length > 0) {
-              // TODO: Implement the upload logic here
-              alert('File is being uploaded...');
-            } else {
+          uploadBtn.addEventListener('click', function () {
+            var formData = new FormData();
+
+            // Ensure there's at least one file selected
+            if (fileInput.files.length === 0) {
               alert('Please select a file to upload.');
+              return;
             }
+
+            // Append the file to the FormData instance
+            formData.append('file', fileInput.files[0]);
+
+            // Disable the button to prevent multiple uploads
+            this.disabled = true;
+            this.textContent = 'Uploading...';
+
+            // Use Fetch API to post the FormData to the server
+            fetch('http://159.223.182.13:8080/upload/resume', {
+              method: 'POST',
+              body: formData,
+            })
+              .then(response => {
+                if (!response.ok) {
+                  throw new Error('Network response was not ok ' + response.statusText);
+                }
+                return response.json(); // Or `response.text()` if the server responds with plain text
+              })
+              .then(data => {
+                console.log('Success:', data);
+                document.getElementById('upload-status').innerText = 'Upload successful!';
+                // Re-enable the button
+                this.disabled = false;
+                this.textContent = 'Upload File';
+              })
+              .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('upload-status').innerText = 'Upload failed: ' + error.message;
+                // Re-enable the button
+                this.disabled = false;
+                this.textContent = 'Upload File';
+              });
           });
-        
+
           // Cancel button logic
-          cancelBtn.addEventListener('click', function() {
+          cancelBtn.addEventListener('click', function () {
             fileInput.value = ''; // Clear the input
             // TODO: Any additional cancel logic
             alert('Upload cancelled.');
           });
-        
+
           function highlight(e) {
             dropArea.classList.add('highlight');
           }
-        
+
           function unhighlight(e) {
             dropArea.classList.remove('highlight');
           }
-        
+
           function handleDrop(e) {
             var dt = e.dataTransfer;
             var files = dt.files;
-        
+
             handleFiles(files);
           }
-        
+
           function handleFiles(files) {
-            fileInput.files = files;
-            // You could also preview the file or do preliminary validation here
+            // Simple validation for demonstration purposes
+            const file = files[0];
+            if (!file) {
+              return; // No file selected
+            }
+
+            // Validate the file type
+            const validTypes = ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'text/plain'];
+            if (!validTypes.includes(file.type)) {
+              alert('Please select valid file type: docx, pdf, or txt.');
+              return;
+            }
+
+            // Validate the file size (e.g., 2MB limit)
+            const maxSizeInBytes = 2 * 1024 * 1024; // 2MB
+            if (file.size > maxSizeInBytes) {
+              alert('The file is too large. Please select a file smaller than 2MB.');
+              return;
+            }
+
+            // If you have a file input, set its files to the files from the drop
+            // document.getElementById('file-input').files = files;
           }
 
           done();
