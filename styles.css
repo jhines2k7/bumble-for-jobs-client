@@ -508,23 +508,28 @@ input, button, select, textarea {
   margin-right: 5px;
 }
 
+#file-to-upload {
+  width: 100%;
+  padding: 0 0 0 20px;
+}
+
 /* icons */
 @import url(https://fonts.googleapis.com/css?family=Open+Sans:800);
 
 /* you simply need to change the color of the background of each div - these are at the bottom of the css */
 
 .icon {
-	float:left;
-  margin:20px;
-  width:120px;
-  height:200px;
+  margin:5px;
+  width:40px;
+  height:50px;
   background:#000;
-  border-radius:6px;
+  border-radius:3px;
   color:#fff;
   font-family: 'Open Sans', sans-serif;
-  line-height:130px;
-  font-size:50px;
-  padding-left:20px;
+  font-weight: 800;
+  line-height:30px;
+  font-size:12px;
+  padding-left:8px;
   text-shadow: 3px 1px 1px rgba(0,0,0,0.4);
   -webkit-transition:all 300ms ease-in-out;
   -moz-transition:all 300ms ease-in-out;
@@ -533,19 +538,19 @@ input, button, select, textarea {
   transition:all 300ms ease-in-out;
   -webkit-transform-style:preserve-3d;
   transform-style:preserve-3d; 
-  -webkit-perspective:600;
-  perspective:600;
-    -webkit-transform: perspective(600);
-  -moz-transform: perspective(600);
-  -ms-transform: perspective(600);
-  -o-transform: perspective(600);
-  transform: perspective(600);
+  -webkit-perspective:150;
+  perspective:150;
+  -webkit-transform: perspective(150);
+  -moz-transform: perspective(150);
+  -ms-transform: perspective(150);
+  -o-transform: perspective(150);
+  transform: perspective(150);
 }
 .icon:before {
 	content:'';
   float:right;
-  width:40px;
-  height:40px;
+  width:10px;
+  height:10px;
   background-image:-webkit-linear-gradient(top right, rgba(255,255,255,1) 50%, rgba(255,255,255,0.4) 50%);
   background-image:linear-gradient(to bottom left, rgba(255,255,255,1) 50%, rgba(255,255,255,0.4) 50%);
   border-radius:0 0 0 6px;
@@ -553,16 +558,16 @@ input, button, select, textarea {
 .icon:after {
   content:'';
   float:right;
-  width:40px;
-  height:40px;
+  width:10px;
+  height:10px;
   background-image:-webkit-linear-gradient(top right, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0) 50%);
   background-image:linear-gradient(to bottom left, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0) 50%);
   position:relative;
-  top:-130px;
+  top:-30px;
   left:0px;
 }
 .icon:hover {
-  -webkit-transform:translateZ(200px);
+  -webkit-transform:translateZ(50px);
   -moz-transform:scale(1.1);
   transform:scale(1.1);
 }
@@ -573,7 +578,7 @@ input, button, select, textarea {
 .doc {
   background:#4766b3;
 }
-.xls {
+.txt {
   background:#63b345;
 }
 

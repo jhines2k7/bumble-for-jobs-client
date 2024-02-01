@@ -204,9 +204,18 @@ function handleFileUpload(endpoint) {
     <div class="icon xls">XLS</div>
     <div class="icon doc">DOC</div>
     */
+    const fileTypeLookup = {
+      'application/pdf': 'pdf',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'doc',
+      'text/plain': 'txt'
+    };
+
+    const fileType = fileTypeLookup[file.type];
+
     let icon = document.createElement('div');
     icon.classList.add('icon');
-    icon.classList.add(file.type.split('/')[1]);
+    icon.classList.add(fileType);
+    icon.textContent = fileType.toUpperCase();
     
     document.getElementById('file-to-upload').innerHTML = '';
     document.getElementById('file-to-upload').appendChild(icon);
@@ -310,7 +319,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }, {
       before(done, match) {
         (async () => {
-          await loadTemplate("profile-3140e763fe6216d12f1bced34ad6c186.html", document.getElementById('app'));
+          await loadTemplate("profile-af7e983176b017d07bcef08fce3fa4ff.html", document.getElementById('app'));
 
           var overlay = document.body.lastElementChild;
           overlay.remove();
