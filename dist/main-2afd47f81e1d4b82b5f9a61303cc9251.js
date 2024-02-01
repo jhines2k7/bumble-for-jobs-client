@@ -1,6 +1,7 @@
 const router = new Navigo('/', { hash: true });
 let profileMenu = document.getElementById('profile-menu');
 let hammer = new Hammer(profileMenu);
+const domain = 'http://159.223.182.13:8080';
 
 async function loadTemplate(name, element) {
   return fetch(`templates/${name}`)
@@ -78,8 +79,8 @@ function toggleProfileMenu() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  const socket = io('http://159.223.182.13:8080');
-  
+  const socket = io(domain, { transports: ['websocket'] });
+
   socket.on('connect', () => {
     console.log('Connected to the server');
   });
@@ -158,7 +159,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }, {
       before(done, match) {
         (async () => {
-          await loadTemplate("profile-78f69384115d1d4930ac27c1d9a9cde8.html", document.getElementById('app'));
+          await loadTemplate("profile-f8bb7426c9df9fe7ba2e985178c07dd3.html", document.getElementById('app'));
 
           var overlay = document.body.lastElementChild;
           overlay.remove();
@@ -174,66 +175,134 @@ document.addEventListener('DOMContentLoaded', () => {
           let fileInput = document.getElementById('file-input');
           let uploadBtn = document.querySelector('.modal-footer .btn-primary'); // document.getElementById('upload-btn');
           let cancelBtn = document.querySelector('.modal-footer .btn-secondary'); // document.getElementById('cancel-btn');
-        
+          let fileBrowseBtn = document.querySelector('.modal-logo');
+
           // Highlight drop area when file is dragged over it
           ['dragenter', 'dragover'].forEach(eventName => {
             dropArea.addEventListener(eventName, highlight, false);
           });
-        
+
           ['dragleave', 'drop'].forEach(eventName => {
             dropArea.addEventListener(eventName, unhighlight, false);
           });
-        
+
           // Handle file drop
           dropArea.addEventListener('drop', handleDrop, false);
-        
+
           // Handle file selection via input
-          fileInput.addEventListener('change', function() {
+          fileInput.addEventListener('change', function () {
             handleFiles(this.files);
           }, false);
 
-          let fileUploadText = document.querySelector('.upload-area-description strong')
-          
-          fileUploadText.addEventListener('click', function() {
+          document.querySelector('.upload-area-description strong').addEventListener('click', function () {
             // Trigger the file input when the div is clicked
             fileInput.click();
           });
 
-          // Handle the actual upload process
-          uploadBtn.addEventListener('click', function() {
-            if (fileInput.files.length > 0) {
-              // TODO: Implement the upload logic here
-              alert('File is being uploaded...');
-            } else {
-              alert('Please select a file to upload.');
-            }
+          fileBrowseBtn.addEventListener('click', function () {
+            fileInput.click();
           });
-        
+
+          // Handle the actual upload process
+          uploadBtn.addEventListener('click', function () {
+            var formData = new FormData();
+
+            // Ensure there's at least one file selected
+            if (fileInput.files.length === 0) {
+              alert('Please select a file to upload.');
+              return;
+            }
+
+            // Append the file to the FormData instance
+            formData.append('file', fileInput.files[0]);
+
+            // Disable the button to prevent multiple uploads
+            this.disabled = true;
+            this.textContent = 'Uploading...';
+
+            // Use Fetch API to post the FormData to the server
+            fetch(`${domain}/upload/resume`, {
+              method: 'POST',
+              body: formData,
+            })
+              .then(response => {
+                if (!response.ok) {
+                  throw new Error('Network response was not ok ' + response.statusText);
+                }
+                console.log('Response:', response.json());
+              })
+              .then(data => {
+                console.log('Success:', data);
+                document.getElementById('upload-status').innerText = 'Upload successful!';
+                // Re-enable the button
+                this.disabled = false;
+                this.textContent = 'Upload File';
+              })
+              .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('upload-status').innerText = 'Upload failed: ' + error.message;
+                // Re-enable the button
+                this.disabled = false;
+                this.textContent = 'Upload File';
+              });
+          });
+
           // Cancel button logic
-          cancelBtn.addEventListener('click', function() {
+          cancelBtn.addEventListener('click', function () {
             fileInput.value = ''; // Clear the input
             // TODO: Any additional cancel logic
             alert('Upload cancelled.');
           });
-        
+
           function highlight(e) {
             dropArea.classList.add('highlight');
           }
-        
+
           function unhighlight(e) {
             dropArea.classList.remove('highlight');
           }
-        
+
           function handleDrop(e) {
             var dt = e.dataTransfer;
             var files = dt.files;
-        
+
             handleFiles(files);
           }
-        
+
           function handleFiles(files) {
-            fileInput.files = files;
-            // You could also preview the file or do preliminary validation here
+            // Simple validation for demonstration purposes
+            const file = files[0];
+            if (!file) {
+              return; // No file selected
+            }
+
+            // Validate the file type
+            const validTypes = ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'text/plain'];
+            if (!validTypes.includes(file.type)) {
+              alert('Please select valid file type: docx, pdf, or txt.');
+              return;
+            }
+
+            // Validate the file size (e.g., 2MB limit)
+            const maxSizeInBytes = 2 * 1024 * 1024; // 2MB
+            if (file.size > maxSizeInBytes) {
+              alert('The file is too large. Please select a file smaller than 2MB.');
+              return;
+            }
+
+            // add an icon for the file type
+            let icon = document.createElement('i');
+            icon.classList.add('fas');
+            icon.classList.add('fa-file-alt');
+            icon.style.fontSize = '24px';
+            icon.style.marginRight = '5px';
+            icon.style.color = '#007bff';
+            document.getElementById('file-to-upload').innerHTML = '';
+            document.getElementById('file-to-upload').appendChild(icon);
+            document.getElementById('file-to-upload').appendChild(document.createTextNode(file.name));
+
+            // If you have a file input, set its files to the files from the drop
+            // document.getElementById('file-input').files = files;
           }
 
           done();

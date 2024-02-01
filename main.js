@@ -1,6 +1,7 @@
 const router = new Navigo('/', { hash: true });
 let profileMenu = document.getElementById('profile-menu');
 let hammer = new Hammer(profileMenu);
+const domain = 'http://localhost:8000';
 
 async function loadTemplate(name, element) {
   return fetch(`templates/${name}`)
@@ -78,7 +79,7 @@ function toggleProfileMenu() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  const socket = io('http://159.223.182.13:8080');
+  const socket = io(domain, { transports: ['websocket'] });
 
   socket.on('connect', () => {
     console.log('Connected to the server');
@@ -174,6 +175,7 @@ document.addEventListener('DOMContentLoaded', () => {
           let fileInput = document.getElementById('file-input');
           let uploadBtn = document.querySelector('.modal-footer .btn-primary'); // document.getElementById('upload-btn');
           let cancelBtn = document.querySelector('.modal-footer .btn-secondary'); // document.getElementById('cancel-btn');
+          let fileBrowseBtn = document.querySelector('.modal-logo');
 
           // Highlight drop area when file is dragged over it
           ['dragenter', 'dragover'].forEach(eventName => {
@@ -192,10 +194,12 @@ document.addEventListener('DOMContentLoaded', () => {
             handleFiles(this.files);
           }, false);
 
-          let fileUploadText = document.querySelector('.upload-area-description strong')
-
-          fileUploadText.addEventListener('click', function () {
+          document.querySelector('.upload-area-description strong').addEventListener('click', function () {
             // Trigger the file input when the div is clicked
+            fileInput.click();
+          });
+
+          fileBrowseBtn.addEventListener('click', function () {
             fileInput.click();
           });
 
@@ -217,7 +221,7 @@ document.addEventListener('DOMContentLoaded', () => {
             this.textContent = 'Uploading...';
 
             // Use Fetch API to post the FormData to the server
-            fetch('http://159.223.182.13:8080/upload/resume', {
+            fetch(`${domain}/upload/resume`, {
               method: 'POST',
               body: formData,
             })
@@ -225,7 +229,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (!response.ok) {
                   throw new Error('Network response was not ok ' + response.statusText);
                 }
-                return response.json(); // Or `response.text()` if the server responds with plain text
+                console.log('Response:', response.json());
               })
               .then(data => {
                 console.log('Success:', data);
@@ -285,6 +289,17 @@ document.addEventListener('DOMContentLoaded', () => {
               alert('The file is too large. Please select a file smaller than 2MB.');
               return;
             }
+
+            // add an icon for the file type
+            let icon = document.createElement('i');
+            icon.classList.add('fas');
+            icon.classList.add('fa-file-alt');
+            icon.style.fontSize = '24px';
+            icon.style.marginRight = '5px';
+            icon.style.color = '#007bff';
+            document.getElementById('file-to-upload').innerHTML = '';
+            document.getElementById('file-to-upload').appendChild(icon);
+            document.getElementById('file-to-upload').appendChild(document.createTextNode(file.name));
 
             // If you have a file input, set its files to the files from the drop
             // document.getElementById('file-input').files = files;

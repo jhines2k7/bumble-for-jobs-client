@@ -23,7 +23,7 @@ if [ "$environment" == "prod" ]; then
 elif [ "$environment" == "test" ]; then
   domain=""
 elif [ "$environment" == "dev" ]; then
-  domain="167.99.236.187:8080"
+  domain="159.223.182.13:8080"
 else
   echo "Invalid environment specified. Please use 'prod', 'test', or 'dev'."
   exit 1
