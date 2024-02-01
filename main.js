@@ -141,6 +141,7 @@ function handleFileUpload(endpoint) {
       })
       .then(data => {
         console.log('Success:', data);
+        document.getElementById('file-to-upload').innerHTML = '';
         document.getElementById('upload-status').innerText = 'Upload successful!';
         // Re-enable the button
         this.disabled = false;
@@ -148,6 +149,7 @@ function handleFileUpload(endpoint) {
       })
       .catch(error => {
         console.error('Error:', error);
+        document.getElementById('file-to-upload').innerHTML = '';
         document.getElementById('upload-status').innerText = 'Upload failed: ' + error.message;
         // Re-enable the button
         this.disabled = false;
@@ -198,6 +200,8 @@ function handleFileUpload(endpoint) {
       return;
     }
 
+    uploadBtn.disabled = false;
+
     // add an icon for the file type
     /*
     <div class="icon pdf">PDF</div>
@@ -217,8 +221,12 @@ function handleFileUpload(endpoint) {
     icon.classList.add(fileType);
     icon.textContent = fileType.toUpperCase();
     
+    let p = document.createElement('p');
+    p.textContent = file.name;
+
     document.getElementById('file-to-upload').innerHTML = '';
     document.getElementById('file-to-upload').appendChild(icon);
+    document.getElementById('file-to-upload').appendChild(p);
   }
 }
 
