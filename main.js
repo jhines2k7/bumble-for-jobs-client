@@ -55,19 +55,19 @@ function toggleProfileMenu() {
     let initialPosition = -300;
     let newPosition = 0;
 
-    hammer.on('panend', function(e) {
+    hammer.on('panend', function (e) {
       // snap back to initial position if the element is dragged less than 300px to the left
-      if(newPosition > -450) {
+      if (newPosition > -450) {
         profileMenu.style.left = '-300px';
       }
 
-      if(newPosition <= -450) {
+      if (newPosition <= -450) {
         overlay.remove();
         profileMenu.classList.remove('move-right');
       }
     });
 
-    hammer.on('panmove', function(e) {
+    hammer.on('panmove', function (e) {
       newPosition = initialPosition + e.deltaX;
 
       if (newPosition <= initialPosition) {
@@ -153,15 +153,82 @@ document.addEventListener('DOMContentLoaded', () => {
       before(done, match) {
         (async () => {
           await loadTemplate("profile.html", document.getElementById('app'));
-          
+
           var overlay = document.body.lastElementChild;
           overlay.remove();
 
           let profileMenu = document.getElementById('profile-menu');
-          profileMenu.classList.toggle('move-right');          
-          
+          profileMenu.classList.toggle('move-right');
+
           // remove all markup from the footer
           document.getElementById('footer').innerHTML = '';
+
+          // file upload
+          let dropArea = document.querySelector('.upload-area-description'); // document.getElementById('drop-area');          
+          let fileInput = document.getElementById('file-input');
+          let uploadBtn = document.querySelector('.modal-footer .btn-primary'); // document.getElementById('upload-btn');
+          let cancelBtn = document.querySelector('.modal-footer .btn-secondary'); // document.getElementById('cancel-btn');
+        
+          // Highlight drop area when file is dragged over it
+          ['dragenter', 'dragover'].forEach(eventName => {
+            dropArea.addEventListener(eventName, highlight, false);
+          });
+        
+          ['dragleave', 'drop'].forEach(eventName => {
+            dropArea.addEventListener(eventName, unhighlight, false);
+          });
+        
+          // Handle file drop
+          dropArea.addEventListener('drop', handleDrop, false);
+        
+          // Handle file selection via input
+          fileInput.addEventListener('change', function() {
+            handleFiles(this.files);
+          }, false);
+
+          let fileUploadText = document.querySelector('.upload-area-description strong')
+          
+          fileUploadText.addEventListener('click', function() {
+            // Trigger the file input when the div is clicked
+            fileInput.click();
+          });
+
+          // Handle the actual upload process
+          uploadBtn.addEventListener('click', function() {
+            if (fileInput.files.length > 0) {
+              // TODO: Implement the upload logic here
+              alert('File is being uploaded...');
+            } else {
+              alert('Please select a file to upload.');
+            }
+          });
+        
+          // Cancel button logic
+          cancelBtn.addEventListener('click', function() {
+            fileInput.value = ''; // Clear the input
+            // TODO: Any additional cancel logic
+            alert('Upload cancelled.');
+          });
+        
+          function highlight(e) {
+            dropArea.classList.add('highlight');
+          }
+        
+          function unhighlight(e) {
+            dropArea.classList.remove('highlight');
+          }
+        
+          function handleDrop(e) {
+            var dt = e.dataTransfer;
+            var files = dt.files;
+        
+            handleFiles(files);
+          }
+        
+          function handleFiles(files) {
+            fileInput.files = files;
+            // You could also preview the file or do preliminary validation here
+          }
 
           done();
         })();

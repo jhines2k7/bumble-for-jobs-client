@@ -55,30 +55,22 @@ function toggleProfileMenu() {
     let initialPosition = -300;
     let newPosition = 0;
 
-    hammer.on('panend', function(e) {
+    hammer.on('panend', function (e) {
       // snap back to initial position if the element is dragged less than 300px to the left
-      console.log(`newPosition in panend: ${newPosition}`);
-      if(newPosition > -450) {
+      if (newPosition > -450) {
         profileMenu.style.left = '-300px';
       }
 
-      if(newPosition <= -450) {
+      if (newPosition <= -450) {
         overlay.remove();
         profileMenu.classList.remove('move-right');
-        // document.getElementById('profile-menu').innerHTML = '';
       }
-
-      // initialPosition = -300;
     });
 
-    hammer.on('panmove', function(e) {
-      // Calculate the new position
+    hammer.on('panmove', function (e) {
       newPosition = initialPosition + e.deltaX;
-      console.log(`newPosition in panmove: ${newPosition}`);
 
-      // Restrict movement to 300px to the left
       if (newPosition <= initialPosition) {
-        // Update the element's position
         profileMenu.style.left = newPosition + 'px';
       }
     });
@@ -97,7 +89,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
           await loadTemplate("header-c7a43d71033e449e4cf76e454b7df0c2.html", document.getElementById('header'));
           document.querySelector('#header h1').textContent = 'Home';
-          // await loadGameList();
           done();
         })();
       }
@@ -107,7 +98,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }, {
       before(done, match) {
         (async () => {
-          await loadTemplate("foryou-493afa6410a8db0d605da4c939ad1c67.html", document.getElementById('app'));
+          await loadTemplate("foryou-5877e585fed88421756386775b3881a4.html", document.getElementById('app'));
           await loadTemplate("footer-11c9a829e91bc79349c29e61c42c5fb8.html", document.getElementById('footer'));
 
           await loadTemplate("header-c7a43d71033e449e4cf76e454b7df0c2.html", document.getElementById('header'));
@@ -161,16 +152,83 @@ document.addEventListener('DOMContentLoaded', () => {
     }, {
       before(done, match) {
         (async () => {
-          await loadTemplate("profile-20f879d1464507309632ddf196f590ae.html", document.getElementById('app'));
-          
+          await loadTemplate("profile-78f69384115d1d4930ac27c1d9a9cde8.html", document.getElementById('app'));
+
           var overlay = document.body.lastElementChild;
           overlay.remove();
 
           let profileMenu = document.getElementById('profile-menu');
-          profileMenu.classList.toggle('move-right');          
-          
+          profileMenu.classList.toggle('move-right');
+
           // remove all markup from the footer
           document.getElementById('footer').innerHTML = '';
+
+          // file upload
+          let dropArea = document.querySelector('.upload-area-description'); // document.getElementById('drop-area');          
+          let fileInput = document.getElementById('file-input');
+          let uploadBtn = document.querySelector('.modal-footer .btn-primary'); // document.getElementById('upload-btn');
+          let cancelBtn = document.querySelector('.modal-footer .btn-secondary'); // document.getElementById('cancel-btn');
+        
+          // Highlight drop area when file is dragged over it
+          ['dragenter', 'dragover'].forEach(eventName => {
+            dropArea.addEventListener(eventName, highlight, false);
+          });
+        
+          ['dragleave', 'drop'].forEach(eventName => {
+            dropArea.addEventListener(eventName, unhighlight, false);
+          });
+        
+          // Handle file drop
+          dropArea.addEventListener('drop', handleDrop, false);
+        
+          // Handle file selection via input
+          fileInput.addEventListener('change', function() {
+            handleFiles(this.files);
+          }, false);
+
+          let fileUploadText = document.querySelector('.upload-area-description strong')
+          
+          fileUploadText.addEventListener('click', function() {
+            // Trigger the file input when the div is clicked
+            fileInput.click();
+          });
+
+          // Handle the actual upload process
+          uploadBtn.addEventListener('click', function() {
+            if (fileInput.files.length > 0) {
+              // TODO: Implement the upload logic here
+              alert('File is being uploaded...');
+            } else {
+              alert('Please select a file to upload.');
+            }
+          });
+        
+          // Cancel button logic
+          cancelBtn.addEventListener('click', function() {
+            fileInput.value = ''; // Clear the input
+            // TODO: Any additional cancel logic
+            alert('Upload cancelled.');
+          });
+        
+          function highlight(e) {
+            dropArea.classList.add('highlight');
+          }
+        
+          function unhighlight(e) {
+            dropArea.classList.remove('highlight');
+          }
+        
+          function handleDrop(e) {
+            var dt = e.dataTransfer;
+            var files = dt.files;
+        
+            handleFiles(files);
+          }
+        
+          function handleFiles(files) {
+            fileInput.files = files;
+            // You could also preview the file or do preliminary validation here
+          }
 
           done();
         })();
