@@ -199,15 +199,17 @@ function handleFileUpload(endpoint) {
     }
 
     // add an icon for the file type
-    let icon = document.createElement('i');
-    icon.classList.add('fas');
-    icon.classList.add('fa-file-alt');
-    icon.style.fontSize = '24px';
-    icon.style.marginRight = '5px';
-    icon.style.color = '#007bff';
+    /*
+    <div class="icon pdf">PDF</div>
+    <div class="icon xls">XLS</div>
+    <div class="icon doc">DOC</div>
+    */
+    let icon = document.createElement('div');
+    icon.classList.add('icon');
+    icon.classList.add(file.type.split('/')[1]);
+    
     document.getElementById('file-to-upload').innerHTML = '';
     document.getElementById('file-to-upload').appendChild(icon);
-    document.getElementById('file-to-upload').appendChild(document.createTextNode(file.name));
   }
 }
 
@@ -297,7 +299,7 @@ document.addEventListener('DOMContentLoaded', () => {
           // remove all markup from the footer
           document.getElementById('footer').innerHTML = '';
 
-          handleFileUpload('upload/resume');
+          handleFileUpload('upload/job-description');
 
           done();
         })();
