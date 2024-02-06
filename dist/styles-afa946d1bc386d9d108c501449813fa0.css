@@ -350,6 +350,8 @@ margin-bottom: 20px;
   --c-text-primary: #0d0f21;
   --c-text-secondary: #6a6b76;
   --c-background-primary: #d0d1de;
+  --c-primary-disabled: #b7bff9;
+  --c-primary-hover: #5767ff;
 }
 
 body {
@@ -479,6 +481,18 @@ input, button, select, textarea {
   background-color: transparent;
 }
 
+.btn-primary:disabled {
+  background-color: var(--c-primary-disabled);
+  color: var(--c-action-primary-accent);
+  border-color: var(--c-action-secondary);
+}
+
+.btn-primary:not(:disabled):hover {
+  background-color: var(--c-primary-hover);
+  color: var(--c-action-primary-accent);
+  border-color: var(--c-action-secondary);
+}
+
 .btn-primary {
   color: #FFF;
   background-color: var(--c-action-primary);
@@ -507,3 +521,82 @@ input, button, select, textarea {
   margin-top: 10px;
   margin-right: 5px;
 }
+
+#file-to-upload {
+  width: 100%;
+  padding: 0 0 0 20px;
+}
+
+#file-to-upload p {
+  font-size: smaller;
+}
+
+/* icons */
+@import url(https://fonts.googleapis.com/css?family=Open+Sans:800);
+
+/* you simply need to change the color of the background of each div - these are at the bottom of the css */
+
+.icon {
+  margin:5px;
+  width:40px;
+  height:50px;
+  background:#000;
+  border-radius:3px;
+  color:#fff;
+  font-family: 'Open Sans', sans-serif;
+  font-weight: 800;
+  line-height:30px;
+  font-size:12px;
+  padding-left:8px;
+  text-shadow: 3px 1px 1px rgba(0,0,0,0.4);
+  -webkit-transition:all 300ms ease-in-out;
+  -moz-transition:all 300ms ease-in-out;
+  -ms-transition:all 300ms ease-in-out;
+  -o-transition:all 300ms ease-in-out;
+  transition:all 300ms ease-in-out;
+  -webkit-transform-style:preserve-3d;
+  transform-style:preserve-3d; 
+  -webkit-perspective:150;
+  perspective:150;
+  -webkit-transform: perspective(150);
+  -moz-transform: perspective(150);
+  -ms-transform: perspective(150);
+  -o-transform: perspective(150);
+  transform: perspective(150);
+}
+.icon:before {
+	content:'';
+  float:right;
+  width:10px;
+  height:10px;
+  background-image:-webkit-linear-gradient(top right, rgba(255,255,255,1) 50%, rgba(255,255,255,0.4) 50%);
+  background-image:linear-gradient(to bottom left, rgba(255,255,255,1) 50%, rgba(255,255,255,0.4) 50%);
+  border-radius:0 0 0 6px;
+}
+.icon:after {
+  content:'';
+  float:right;
+  width:10px;
+  height:10px;
+  background-image:-webkit-linear-gradient(top right, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0) 50%);
+  background-image:linear-gradient(to bottom left, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0) 50%);
+  position:relative;
+  top:-30px;
+  left:0px;
+}
+.icon:hover {
+  -webkit-transform:translateZ(50px);
+  -moz-transform:scale(1.1);
+  transform:scale(1.1);
+}
+/* just need to change the backgrounds */
+.pdf {
+  background:#c7211d;
+}
+.doc {
+  background:#4766b3;
+}
+.txt {
+  background:#63b345;
+}
+
