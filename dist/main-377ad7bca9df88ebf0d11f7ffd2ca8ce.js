@@ -1,7 +1,7 @@
 const router = new Navigo('/', { hash: true });
 let profileMenu = document.getElementById('profile-menu');
 let hammer = new Hammer(profileMenu);
-const domain = 'http://159.223.182.13:8080';
+const domain = 'http://bfj.generalsolutions43.com';
 
 async function loadTemplate(name, element) {
   return fetch(`templates/${name}`)
