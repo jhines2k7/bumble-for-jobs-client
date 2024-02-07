@@ -1,7 +1,7 @@
 const router = new Navigo('/', { hash: true });
 let profileMenu = document.getElementById('profile-menu');
 let hammer = new Hammer(profileMenu);
-const domain = 'http://bfj.generalsolutions43.com';
+const domain = 'https://bfj.generalsolutions43.com';
 
 async function loadTemplate(name, element) {
   return fetch(`templates/${name}`)
@@ -220,7 +220,7 @@ function handleFileUpload(endpoint) {
     icon.classList.add('icon');
     icon.classList.add(fileType);
     icon.textContent = fileType.toUpperCase();
-    
+
     let p = document.createElement('p');
     p.textContent = file.name;
 
@@ -228,6 +228,27 @@ function handleFileUpload(endpoint) {
     document.getElementById('file-to-upload').appendChild(icon);
     document.getElementById('file-to-upload').appendChild(p);
   }
+}
+
+function getCompatibilityAnalysis(userId, city, page) {
+  fetch(`${domain}/get-compatibility-analysis/${userId}/${city}?page=${page}`)
+    .then(response => {
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return response.json();
+    })
+    .then(data => {
+      const compatibilityAnalysis = data.compatibility_analysis;
+      const jobDescription = compatibilityAnalysis.job_description;
+
+      document.querySelector('.container h1').textContent = jobDescription.title;
+      document.querySelector('.container .percentage').innerHTML = `${compatibilityAnalysis.normalized_score}<span>/100</span>`;
+      document.querySelector('.container .content p').textContent = jobDescription.description;
+    })
+    .catch(error => {
+      console.log('There has been a problem with your fetch operation: ', error);
+    });
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -238,6 +259,51 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   router
+    .on("/login", (match) => {
+      console.log(`Match value on login route: ${JSON.stringify(match)}`);
+      let loginForm = document.querySelector('.form .login-form');
+      
+      loginForm.addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const username = document.querySelector('.login-form input[type="text"]').value;
+        const password = document.querySelector('.login-form input[type="password"]').value;
+
+        fetch(`${domain}/login`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ username: username, password: password }),
+        })
+          .then(response => {
+            if (!response.ok) {
+              throw new Error('Network response was not ok ' + response.statusText);
+            }
+
+            return response.json();
+          })
+          .then(data => {
+            if (data.access_token) {
+              // Store the JWT in localStorage or session storage
+              localStorage.setItem('access_token', data.access_token);
+              
+              router.navigate(`/you/${data.id}/${data.city}?page=1`);
+            } else {
+              alert('Login failed');
+            }
+          })
+          .catch(error => console.error('Error:', error));
+      });
+    }, {
+      before(done) {
+        (async () => {
+          await loadTemplate("login-a89aeb4d882525f6323a07d6175f0b36.html", document.getElementById('app'));
+          document.getElementById('footer').innerHTML = '';
+          done();
+        })();
+      }
+    })
     .on("/", (match) => {
       console.log(`Match value on home route: ${JSON.stringify(match)}`);
     }, {
@@ -252,22 +318,25 @@ document.addEventListener('DOMContentLoaded', () => {
         })();
       }
     })
-    .on("/you/:userId", (match) => {
-      console.log(`Match value on game route: ${JSON.stringify(match)}`);
+    .on("/you/:id/:city", (match) => {
+      console.log(`Match value on you route: ${JSON.stringify(match)}`);
     }, {
       before(done, match) {
         (async () => {
-          await loadTemplate("foryou-5877e585fed88421756386775b3881a4.html", document.getElementById('app'));
+          await loadTemplate("foryou-85fd3c9f8358c0b1aec1a92da0c17037.html", document.getElementById('app'));
           await loadTemplate("footer-11c9a829e91bc79349c29e61c42c5fb8.html", document.getElementById('footer'));
 
           await loadTemplate("header-c7a43d71033e449e4cf76e454b7df0c2.html", document.getElementById('header'));
           document.querySelector('#header h1').textContent = 'For You';
+
+          getCompatibilityAnalysis(match.data.id, match.data.city, match.params.page);
+
           done();
         })();
       }
     })
     .on("/chats/:userId", (match) => {
-      console.log(`Match value on game route: ${JSON.stringify(match)}`);
+      console.log(`Match value on chats route: ${JSON.stringify(match)}`);
     }, {
       before(done, match) {
         (async () => {
@@ -281,7 +350,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     })
     .on("/daily/:userId", (match) => {
-      console.log(`Match value on game route: ${JSON.stringify(match)}`);
+      console.log(`Match value on daily route: ${JSON.stringify(match)}`);
     }, {
       before(done, match) {
         (async () => {
@@ -295,7 +364,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     })
     .on("/chat/:userId", (match) => {
-      console.log(`Match value on game route: ${JSON.stringify(match)}`);
+      console.log(`Match value on chat route: ${JSON.stringify(match)}`);
     }, {
       before(done, match) {
         (async () => {
@@ -307,7 +376,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     })
     .on("/job-description", (match) => {
-      console.log(`Match value on game route: ${JSON.stringify(match)}`);
+      console.log(`Match value on job-description route: ${JSON.stringify(match)}`);
     }, {
       before(done, match) {
         (async () => {
@@ -323,7 +392,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     })
     .on("/profile/:userId", (match) => {
-      console.log(`Match value on game route: ${JSON.stringify(match)}`);
+      console.log(`Match value on profile route: ${JSON.stringify(match)}`);
     }, {
       before(done, match) {
         (async () => {
@@ -345,7 +414,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     })
     .on("/settings/:userId", (match) => {
-      console.log(`Match value on game route: ${JSON.stringify(match)}`);
+      console.log(`Match value on settings route: ${JSON.stringify(match)}`);
     }, {
       before(done, match) {
         (async () => {
@@ -356,7 +425,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     })
     .on("/preferences/:userId", (match) => {
-      console.log(`Match value on game route: ${JSON.stringify(match)}`);
+      console.log(`Match value on preferences route: ${JSON.stringify(match)}`);
     }, {
       before(done, match) {
         (async () => {
