@@ -24,9 +24,9 @@ function navigateToLastResolved() {
   toggleProfileMenu();
 }
 
-function toggleProfileMenu() {
+function toggleProfileMenu(userId) {
   (async () => {
-    await loadTemplate("profile-menu-d5f0385b81dfb67f87448af9a8883dad.html", document.getElementById('profile-menu'));
+    await loadTemplate("profile-menu-1f935f85c6e7f25c6680156b02caacba.html", document.getElementById('profile-menu'));
 
     // create a transparent overlay to prevent scrolling and clicking
     let overlay = document.createElement('div');
@@ -74,6 +74,21 @@ function toggleProfileMenu() {
       if (newPosition <= initialPosition) {
         profileMenu.style.left = newPosition + 'px';
       }
+    });
+
+    const preferencesBtn = document.getElementById('preferences-btn');
+    preferencesBtn.addEventListener('click', () => {
+      router.navigate(`/preferences/${userId}`);
+    });
+
+    const settingsBtn = document.getElementById('settings-btn');
+    settingsBtn.addEventListener('click', () => {
+      router.navigate(`/settings/${userId}`);
+    });
+
+    const profileBtn = document.getElementById('profile-btn');
+    profileBtn.addEventListener('click', () => {
+      router.navigate(`/profile/${userId}`);
     });
   })();
 }
@@ -230,8 +245,8 @@ function handleFileUpload(endpoint) {
   }
 }
 
-function getCompatibilityAnalysis(userId, city, page) {
-  fetch(`${domain}/get-compatibility-analysis/${userId}/${city}?page=${page}`)
+function getCompatibilityAnalysis(userId, state, page) {
+  fetch(`${domain}/get-compatibility-analysis/${userId}/${state}?page=${page}`)
     .then(response => {
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -239,17 +254,43 @@ function getCompatibilityAnalysis(userId, city, page) {
       return response.json();
     })
     .then(data => {
-      const compatibilityAnalysis = data.compatibility_analysis;
-      const jobDescription = compatibilityAnalysis.job_description;
+      const jobDescription = data.job_description;
 
       document.querySelector('.container h1').textContent = jobDescription.title;
-      document.querySelector('.container .percentage').innerHTML = `${compatibilityAnalysis.normalized_score}<span>/100</span>`;
+      document.querySelector('.container .percentage').innerHTML = `${data.score}<span>/100</span>`;
       document.querySelector('.container .content p').textContent = jobDescription.description;
+
+      const chatButton = document.querySelector('.user-interaction-options .round-button.chat');
+      chatButton.addEventListener('click', () => {
+        router.navigate(`/chat/${userId}/${jobDescription.employer_id}`);
+      });
     })
     .catch(error => {
       console.log('There has been a problem with your fetch operation: ', error);
     });
 }
+
+function checkTokenExpiry() {
+  const token = localStorage.getItem('access_token');
+  if (token) {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    const expiry = payload.exp;
+    const now = Date.now() / 1000; // Convert to seconds
+    if (now > expiry) {
+      logout(); // Token has expired, log the user out
+    }
+  }
+}
+
+function logout() {
+  // Remove the token from localStorage or sessionStorage
+  localStorage.removeItem('access_token');
+  // Redirect the user to the login page or home page
+  router.navigate('/login');
+}
+
+// Call this function on page load or periodically
+// checkTokenExpiry();
 
 document.addEventListener('DOMContentLoaded', () => {
   const socket = io(domain, { transports: ['websocket'] });
@@ -262,7 +303,7 @@ document.addEventListener('DOMContentLoaded', () => {
     .on("/login", (match) => {
       console.log(`Match value on login route: ${JSON.stringify(match)}`);
       let loginForm = document.querySelector('.form .login-form');
-      
+
       loginForm.addEventListener('submit', function (e) {
         e.preventDefault();
 
@@ -287,8 +328,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (data.access_token) {
               // Store the JWT in localStorage or session storage
               localStorage.setItem('access_token', data.access_token);
-              
-              router.navigate(`/you/${data.id}/${data.city}?page=1`);
+
+              router.navigate(`/you/${data.id}/${data.state}?page=1`);
             } else {
               alert('Login failed');
             }
@@ -308,28 +349,35 @@ document.addEventListener('DOMContentLoaded', () => {
       console.log(`Match value on home route: ${JSON.stringify(match)}`);
     }, {
       before(done) {
+        checkTokenExpiry();
         (async () => {
           await loadTemplate("home.html", document.getElementById('app'));
           await loadTemplate("footer-11c9a829e91bc79349c29e61c42c5fb8.html", document.getElementById('footer'));
 
-          await loadTemplate("header-c7a43d71033e449e4cf76e454b7df0c2.html", document.getElementById('header'));
+          await loadTemplate("header-eec68ed32b504a4e1b1ec348d14774e8.html", document.getElementById('header'));
           document.querySelector('#header h1').textContent = 'Home';
+
           done();
         })();
       }
     })
-    .on("/you/:id/:city", (match) => {
+    .on("/you/:id/:state", (match) => {
       console.log(`Match value on you route: ${JSON.stringify(match)}`);
     }, {
       before(done, match) {
+        checkTokenExpiry();
         (async () => {
-          await loadTemplate("foryou-85fd3c9f8358c0b1aec1a92da0c17037.html", document.getElementById('app'));
+          await loadTemplate("foryou-a504e05bcd79344f108d8c0df842b425.html", document.getElementById('app'));
           await loadTemplate("footer-11c9a829e91bc79349c29e61c42c5fb8.html", document.getElementById('footer'));
-
-          await loadTemplate("header-c7a43d71033e449e4cf76e454b7df0c2.html", document.getElementById('header'));
+          await loadTemplate("header-eec68ed32b504a4e1b1ec348d14774e8.html", document.getElementById('header'));
           document.querySelector('#header h1').textContent = 'For You';
 
-          getCompatibilityAnalysis(match.data.id, match.data.city, match.params.page);
+          const avatar = document.querySelector('#header .avatar');
+          avatar.addEventListener('click', () => {
+            toggleProfileMenu(match.data.id);
+          }, false);
+
+          getCompatibilityAnalysis(match.data.id, match.data.state, match.params.page);
 
           done();
         })();
@@ -339,12 +387,16 @@ document.addEventListener('DOMContentLoaded', () => {
       console.log(`Match value on chats route: ${JSON.stringify(match)}`);
     }, {
       before(done, match) {
+        checkTokenExpiry();
         (async () => {
           await loadTemplate("chats-7aaaad2c6390698810e0a82353682c12.html", document.getElementById('app'));
           await loadTemplate("footer-11c9a829e91bc79349c29e61c42c5fb8.html", document.getElementById('footer'));
 
-          await loadTemplate("header-c7a43d71033e449e4cf76e454b7df0c2.html", document.getElementById('header'));
+          await loadTemplate("header-eec68ed32b504a4e1b1ec348d14774e8.html", document.getElementById('header'));
           document.querySelector('#header h1').textContent = 'Chats';
+          /*    <div class="chat-title">
+                  <a href="#/you/12345678">&lt; Communication, Society and Media (Job Title)</a>
+                </div> */
           done();
         })();
       }
@@ -353,23 +405,69 @@ document.addEventListener('DOMContentLoaded', () => {
       console.log(`Match value on daily route: ${JSON.stringify(match)}`);
     }, {
       before(done, match) {
+        checkTokenExpiry();
         (async () => {
           await loadTemplate("dailypicks-7aaaad2c6390698810e0a82353682c12.html", document.getElementById('app'));
           await loadTemplate("footer-11c9a829e91bc79349c29e61c42c5fb8.html", document.getElementById('footer'));
 
-          await loadTemplate("header-c7a43d71033e449e4cf76e454b7df0c2.html", document.getElementById('header'));
+          await loadTemplate("header-eec68ed32b504a4e1b1ec348d14774e8.html", document.getElementById('header'));
           document.querySelector('#header h1').textContent = 'Daily Picks';
           done();
         })();
       }
     })
-    .on("/chat/:userId", (match) => {
+    .on("/chat/:userId/:employerId", (match) => {
       console.log(`Match value on chat route: ${JSON.stringify(match)}`);
     }, {
       before(done, match) {
+        checkTokenExpiry();
         (async () => {
-          await loadTemplate("chat-3722e1f3fdfa7dc68549ac8cc4589bdb.html", document.getElementById('app'));
+          await loadTemplate("chat-8a84170e7a3bfa4539ad0280218f5b74.html", document.getElementById('app'));
           await loadTemplate("chat-footer-8cb9441ae82b8cbeb26c69a888275874.html", document.getElementById('footer'));
+
+          fetch(`${domain}/get-chat/${match.data.userId}/${match.data.employerId}`)
+            .then(response => {
+              if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+              }
+              return response.json();
+            })
+            .then(data => {
+              document.querySelector('.chat-title p').textContent = data.job_description.title;
+
+              const chatMessages = document.querySelector('#chat-zone .chat-messages');
+
+              data.messages.forEach(message => {
+                let messageItemDiv = document.createElement('div');
+
+                if (message.sender === 'EMPLOYER') {
+                  messageItemDiv.classList.add('message-item customer');
+                } else {
+                  messageItemDiv.classList.add('message-item moderator');
+                }
+
+                let messageBlocDiv = document.createElement('div');
+                messageBlocDiv.classList.add('message-bloc');
+
+                let messageDiv = document.createElement('div');
+                messageDiv.classList.add('message');
+                messageDiv.textContent = message.message;
+
+                let dateTimeDiv = document.createElement('div');
+                dateTimeDiv.classList.add('date-time');
+                dateTimeDiv.textContent = message.date_time;
+
+                messageBlocDiv.appendChild(messageDiv);
+                messageBlocDiv.appendChild(dateTimeDiv);
+
+                messageItemDiv.appendChild(messageBlocDiv);
+
+                chatMessages.appendChild(messageItemDiv);
+              });
+            })
+            .catch(error => {
+              console.log('There has been a problem with your fetch operation: ', error);
+            });
 
           done();
         })();
@@ -379,6 +477,7 @@ document.addEventListener('DOMContentLoaded', () => {
       console.log(`Match value on job-description route: ${JSON.stringify(match)}`);
     }, {
       before(done, match) {
+        checkTokenExpiry();
         (async () => {
           await loadTemplate("job-description-ab22345fd6d9b7bda5962481f1af72af.html", document.getElementById('app'));
 
@@ -395,8 +494,9 @@ document.addEventListener('DOMContentLoaded', () => {
       console.log(`Match value on profile route: ${JSON.stringify(match)}`);
     }, {
       before(done, match) {
+        checkTokenExpiry();
         (async () => {
-          await loadTemplate("profile-613d4b674d25d661e0cdc7174e1b92d3.html", document.getElementById('app'));
+          await loadTemplate("profile-448518c07b2836cf2706151c20b876d4.html", document.getElementById('app'));
 
           var overlay = document.body.lastElementChild;
           overlay.remove();
@@ -417,6 +517,7 @@ document.addEventListener('DOMContentLoaded', () => {
       console.log(`Match value on settings route: ${JSON.stringify(match)}`);
     }, {
       before(done, match) {
+        checkTokenExpiry();
         (async () => {
           await loadTemplate("settings-d41d8cd98f00b204e9800998ecf8427e.html", document.getElementById('app'));
 
@@ -428,6 +529,7 @@ document.addEventListener('DOMContentLoaded', () => {
       console.log(`Match value on preferences route: ${JSON.stringify(match)}`);
     }, {
       before(done, match) {
+        checkTokenExpiry();
         (async () => {
           await loadTemplate("preferences-d41d8cd98f00b204e9800998ecf8427e.html", document.getElementById('app'));
 
