@@ -24,7 +24,7 @@ function navigateToLastResolved() {
   toggleProfileMenu();
 }
 
-function toggleProfileMenu(userId) {
+function toggleProfileMenu(userId, state) {
   (async () => {
     await loadTemplate("profile-menu-1f935f85c6e7f25c6680156b02caacba.html", document.getElementById('profile-menu'));
 
@@ -78,22 +78,22 @@ function toggleProfileMenu(userId) {
 
     const preferencesBtn = document.getElementById('preferences-btn');
     preferencesBtn.addEventListener('click', () => {
-      router.navigate(`/preferences/${userId}`);
+      router.navigate(`/preferences/${userId}/${state}`);
     });
 
     const settingsBtn = document.getElementById('settings-btn');
     settingsBtn.addEventListener('click', () => {
-      router.navigate(`/settings/${userId}`);
+      router.navigate(`/settings/${userId}/${state}`);
     });
 
     const profileBtn = document.getElementById('profile-btn');
     profileBtn.addEventListener('click', () => {
-      router.navigate(`/profile/${userId}`);
+      router.navigate(`/profile/${userId}/${state}`);
     });
   })();
 }
 
-function handleFileUpload(endpoint) {
+function handleFileUpload(endpoint, user) {
   let dropArea = document.querySelector('.upload-area-description'); // document.getElementById('drop-area');          
   let fileInput = document.getElementById('file-input');
   let uploadBtn = document.querySelector('.modal-footer .btn-primary'); // document.getElementById('upload-btn');
@@ -138,6 +138,7 @@ function handleFileUpload(endpoint) {
 
     // Append the file to the FormData instance
     formData.append('file', fileInput.files[0]);
+    formData.append('user', JSON.stringify(user));
 
     // Disable the button to prevent multiple uploads
     this.disabled = true;
@@ -254,11 +255,48 @@ function getCompatibilityAnalysis(userId, state, page) {
       return response.json();
     })
     .then(data => {
+      // test data.job_description for empty object
+      if (data.job_description === undefined || data.job_description === null) {
+        router.navigate(`/profile/${userId}/${state}`);
+      }
+
       const jobDescription = data.job_description;
 
       document.querySelector('.container h1').textContent = jobDescription.title;
       document.querySelector('.container .percentage').innerHTML = `${data.score}<span>/100</span>`;
       document.querySelector('.container .content p').textContent = jobDescription.description;
+
+      const responsibilitiesUL = document.getElementById('responsibilities');
+      jobDescription.responsibilities.forEach(responsibility => {
+        let li = document.createElement('li');
+        li.textContent = responsibility;
+        responsibilitiesUL.appendChild(li);
+      });
+
+      const requiredSkillsUL = document.getElementById('required-skills');
+      jobDescription.required_skills.forEach(skill => {
+        let li = document.createElement('li');
+        li.textContent = skill;
+        requiredSkillsUL.appendChild(li);
+      });
+
+      const softSkillsUL = document.getElementById('soft-skills');
+      jobDescription.soft_skills.forEach(skill => {
+        let li = document.createElement('li');
+        li.textContent = skill;
+        softSkillsUL.appendChild(li);
+      });
+
+      if(jobDescription.benefits !== undefined && jobDescription.benefits !== null && jobDescription.benefits.length === 0) {
+        const benefitsUL = document.getElementById('benefits');
+        jobDescription.benefits.forEach(benefit => {
+          let li = document.createElement('li');
+          li.textContent = benefit;
+          benefitsUL.appendChild(li);
+        });
+      } else {
+        document.getElementById('benefits').innerHTML = '<li>No benefits listed</li>';
+      }
 
       const chatButton = document.querySelector('.user-interaction-options .round-button.chat');
       chatButton.addEventListener('click', () => {
@@ -271,6 +309,7 @@ function getCompatibilityAnalysis(userId, state, page) {
 }
 
 function checkTokenExpiry() {
+  return;
   const token = localStorage.getItem('access_token');
   if (token) {
     const payload = JSON.parse(atob(token.split('.')[1]));
@@ -367,14 +406,14 @@ document.addEventListener('DOMContentLoaded', () => {
       before(done, match) {
         checkTokenExpiry();
         (async () => {
-          await loadTemplate("foryou-a504e05bcd79344f108d8c0df842b425.html", document.getElementById('app'));
+          await loadTemplate("foryou-68b405b145000f38dbd20b638b1c97aa.html", document.getElementById('app'));
           await loadTemplate("footer-11c9a829e91bc79349c29e61c42c5fb8.html", document.getElementById('footer'));
           await loadTemplate("header-eec68ed32b504a4e1b1ec348d14774e8.html", document.getElementById('header'));
           document.querySelector('#header h1').textContent = 'For You';
 
           const avatar = document.querySelector('#header .avatar');
           avatar.addEventListener('click', () => {
-            toggleProfileMenu(match.data.id);
+            toggleProfileMenu(match.data.id, match.data.state);
           }, false);
 
           getCompatibilityAnalysis(match.data.id, match.data.state, match.params.page);
@@ -473,13 +512,13 @@ document.addEventListener('DOMContentLoaded', () => {
         })();
       }
     })
-    .on("/job-description", (match) => {
-      console.log(`Match value on job-description route: ${JSON.stringify(match)}`);
+    .on("/upload-resume", (match) => {
+      console.log(`Match value on upload resume route: ${JSON.stringify(match)}`);
     }, {
       before(done, match) {
         checkTokenExpiry();
         (async () => {
-          await loadTemplate("job-description-ab22345fd6d9b7bda5962481f1af72af.html", document.getElementById('app'));
+          await loadTemplate("file-upload-ab22345fd6d9b7bda5962481f1af72af.html", document.getElementById('app'));
 
           // remove all markup from the footer
           document.getElementById('footer').innerHTML = '';
@@ -490,13 +529,13 @@ document.addEventListener('DOMContentLoaded', () => {
         })();
       }
     })
-    .on("/profile/:userId", (match) => {
+    .on("/profile/:userId/:state", (match) => {
       console.log(`Match value on profile route: ${JSON.stringify(match)}`);
     }, {
       before(done, match) {
         checkTokenExpiry();
         (async () => {
-          await loadTemplate("profile-448518c07b2836cf2706151c20b876d4.html", document.getElementById('app'));
+          await loadTemplate("file-upload-ab22345fd6d9b7bda5962481f1af72af.html", document.getElementById('app'));
 
           var overlay = document.body.lastElementChild;
           overlay.remove();
@@ -507,7 +546,12 @@ document.addEventListener('DOMContentLoaded', () => {
           // remove all markup from the footer
           document.getElementById('footer').innerHTML = '';
 
-          handleFileUpload('upload/resume');
+          const user = {
+            id: match.data.userId,
+            state: match.data.state,
+          };
+
+          handleFileUpload('upload/resume', user);
 
           done();
         })();

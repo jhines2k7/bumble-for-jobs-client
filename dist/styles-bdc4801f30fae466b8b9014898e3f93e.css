@@ -23,18 +23,22 @@ body {
 }
 .content {
   border-top: 2px solid black;
-  padding-top: 10px;
+  padding: 10px 0 65px 0;
   margin-top: 10px;
 }
 .content h2 {
   font-size: 18px;
-  margin: 0 0 10px 0;
+  margin: 10px 0 10px 0;
   font-weight: bold;
 }
-.content p {
+.content p, .content ul {
   font-size: 14px;
   margin: 0;
   padding: 0 0 0 20px;
+}
+.content ul {
+  list-style: circle;
+  padding: 0 0 0 40px;
 }
 .percentage {
   font-size: 225px;
