@@ -9,9 +9,12 @@ body {
 }
 .container {
   width: 100%;
-  max-width: 400px;
+  max-width: 440px;
   margin: 0 auto;
   position: relative;
+  background-color: #f0f0f0;
+  box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.3), -5px -5px 10px rgba(255, 255, 255, 0.5);
+  padding: 20px;
 }
 .title {
   font-size: 24px;
@@ -101,11 +104,11 @@ body {
   height: 40px;
 }
 .chat {
-  background-color: skyblue;
+  background-color: #87ceeb;
   margin-right: 10px;
 }
 .like {
-  background-color: lightcoral;
+  background-color: #f08080;
 }
 #interaction-controls, #chat-input {
   display: flex;

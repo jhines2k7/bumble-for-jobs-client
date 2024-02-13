@@ -287,7 +287,7 @@ function getCompatibilityAnalysis(userId, state, page) {
         softSkillsUL.appendChild(li);
       });
 
-      if(jobDescription.benefits !== undefined && jobDescription.benefits !== null && jobDescription.benefits.length === 0) {
+      if(jobDescription.benefits !== undefined && jobDescription.benefits !== null && jobDescription.benefits.length > 0) {
         const benefitsUL = document.getElementById('benefits');
         jobDescription.benefits.forEach(benefit => {
           let li = document.createElement('li');
@@ -301,6 +301,11 @@ function getCompatibilityAnalysis(userId, state, page) {
       const chatButton = document.querySelector('.user-interaction-options .round-button.chat');
       chatButton.addEventListener('click', () => {
         router.navigate(`/chat/${userId}/${jobDescription.employer_id}`);
+      });
+
+      const likeButton = document.querySelector('.user-interaction-options .round-button.like');
+      likeButton.addEventListener('click', () => {
+        router.navigate(`/you/${userId}/${state}?page=${parseInt(page)+1}`);
       });
     })
     .catch(error => {
