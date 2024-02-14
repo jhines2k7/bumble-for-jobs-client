@@ -255,58 +255,66 @@ function getCompatibilityAnalysis(userId, state, page) {
       return response.json();
     })
     .then(data => {
-      // test data.job_description for empty object
-      if (data.job_description === undefined || data.job_description === null) {
-        router.navigate(`/profile/${userId}/${state}`);
-      }
+      (async () => {
+        await loadTemplate("foryou-03c7bf4bc7322839a9e8c52fcdb3c7a9.html", document.getElementById('app'));
+        await loadTemplate("footer-11c9a829e91bc79349c29e61c42c5fb8.html", document.getElementById('footer'));
 
-      const jobDescription = data.job_description;
+        await loadTemplate("header-eec68ed32b504a4e1b1ec348d14774e8.html", document.getElementById('header'));
+        document.querySelector('#header h1').textContent = 'For You';
+        
+        // test data.job_description for empty object
+        if (data.job_description === undefined || data.job_description === null) {
+          router.navigate(`/profile/${userId}/${state}`);
+        }
 
-      document.querySelector('.container h1').textContent = jobDescription.title;
-      document.querySelector('.container .percentage').innerHTML = `${data.score}<span>/100</span>`;
-      document.querySelector('.container .content p').textContent = jobDescription.description;
+        const jobDescription = data.job_description;
 
-      const responsibilitiesUL = document.getElementById('responsibilities');
-      jobDescription.responsibilities.forEach(responsibility => {
-        let li = document.createElement('li');
-        li.textContent = responsibility;
-        responsibilitiesUL.appendChild(li);
-      });
+        document.querySelector('.container h1').textContent = jobDescription.title;
+        document.querySelector('.container .percentage').innerHTML = `${data.score}<span>/100</span>`;
+        document.querySelector('.container .content p').textContent = jobDescription.description;
 
-      const requiredSkillsUL = document.getElementById('required-skills');
-      jobDescription.required_skills.forEach(skill => {
-        let li = document.createElement('li');
-        li.textContent = skill;
-        requiredSkillsUL.appendChild(li);
-      });
-
-      const softSkillsUL = document.getElementById('soft-skills');
-      jobDescription.soft_skills.forEach(skill => {
-        let li = document.createElement('li');
-        li.textContent = skill;
-        softSkillsUL.appendChild(li);
-      });
-
-      if(jobDescription.benefits !== undefined && jobDescription.benefits !== null && jobDescription.benefits.length > 0) {
-        const benefitsUL = document.getElementById('benefits');
-        jobDescription.benefits.forEach(benefit => {
+        const responsibilitiesUL = document.getElementById('responsibilities');
+        jobDescription.responsibilities.forEach(responsibility => {
           let li = document.createElement('li');
-          li.textContent = benefit;
-          benefitsUL.appendChild(li);
+          li.textContent = responsibility;
+          responsibilitiesUL.appendChild(li);
         });
-      } else {
-        document.getElementById('benefits').innerHTML = '<li>No benefits listed</li>';
-      }
 
-      const chatButton = document.querySelector('.user-interaction-options .round-button.chat');
-      chatButton.addEventListener('click', () => {
-        router.navigate(`/chat/${userId}/${jobDescription.employer_id}`);
-      });
+        const requiredSkillsUL = document.getElementById('required-skills');
+        jobDescription.required_skills.forEach(skill => {
+          let li = document.createElement('li');
+          li.textContent = skill;
+          requiredSkillsUL.appendChild(li);
+        });
 
-      const likeButton = document.querySelector('.user-interaction-options .round-button.like');
-      likeButton.addEventListener('click', () => {
-        router.navigate(`/you/${userId}/${state}?page=${parseInt(page)+1}`);
-      });
+        const softSkillsUL = document.getElementById('soft-skills');
+        jobDescription.soft_skills.forEach(skill => {
+          let li = document.createElement('li');
+          li.textContent = skill;
+          softSkillsUL.appendChild(li);
+        });
+
+        if (jobDescription.benefits !== undefined && jobDescription.benefits !== null && jobDescription.benefits.length > 0) {
+          const benefitsUL = document.getElementById('benefits');
+          jobDescription.benefits.forEach(benefit => {
+            let li = document.createElement('li');
+            li.textContent = benefit;
+            benefitsUL.appendChild(li);
+          });
+        } else {
+          document.getElementById('benefits').innerHTML = '<li>No benefits listed</li>';
+        }
+
+        const chatButton = document.querySelector('.user-interaction-options .round-button.chat');
+        chatButton.addEventListener('click', () => {
+          router.navigate(`/chat/${userId}/${jobDescription.employer_id}`);
+        });
+
+        const likeButton = document.querySelector('.user-interaction-options .round-button.like');
+        likeButton.addEventListener('click', () => {
+          router.navigate(`/you/${userId}/${state}?page=${parseInt(page) + 1}`);
+        });
+      })();
     })
     .catch(error => {
       console.log('There has been a problem with your fetch operation: ', error);
@@ -411,16 +419,6 @@ document.addEventListener('DOMContentLoaded', () => {
       before(done, match) {
         checkTokenExpiry();
         (async () => {
-          await loadTemplate("foryou-03c7bf4bc7322839a9e8c52fcdb3c7a9.html", document.getElementById('app'));
-          await loadTemplate("footer-11c9a829e91bc79349c29e61c42c5fb8.html", document.getElementById('footer'));
-          await loadTemplate("header-eec68ed32b504a4e1b1ec348d14774e8.html", document.getElementById('header'));
-          document.querySelector('#header h1').textContent = 'For You';
-
-          const avatar = document.querySelector('#header .avatar');
-          avatar.addEventListener('click', () => {
-            toggleProfileMenu(match.data.id, match.data.state);
-          }, false);
-
           getCompatibilityAnalysis(match.data.id, match.data.state, match.params.page);
 
           done();
@@ -466,7 +464,7 @@ document.addEventListener('DOMContentLoaded', () => {
       before(done, match) {
         checkTokenExpiry();
         (async () => {
-          await loadTemplate("chat-8a84170e7a3bfa4539ad0280218f5b74.html", document.getElementById('app'));
+          await loadTemplate("chat-020049d53271ba6aceafeeb167120764.html", document.getElementById('app'));
           await loadTemplate("chat-footer-8cb9441ae82b8cbeb26c69a888275874.html", document.getElementById('footer'));
 
           fetch(`${domain}/get-chat/${match.data.userId}/${match.data.employerId}`)

@@ -255,58 +255,66 @@ function getCompatibilityAnalysis(userId, state, page) {
       return response.json();
     })
     .then(data => {
-      // test data.job_description for empty object
-      if (data.job_description === undefined || data.job_description === null) {
-        router.navigate(`/profile/${userId}/${state}`);
-      }
+      (async () => {
+        await loadTemplate("foryou.html", document.getElementById('app'));
+        await loadTemplate("footer.html", document.getElementById('footer'));
 
-      const jobDescription = data.job_description;
+        await loadTemplate("header.html", document.getElementById('header'));
+        document.querySelector('#header h1').textContent = 'For You';
 
-      document.querySelector('.container h1').textContent = jobDescription.title;
-      document.querySelector('.container .percentage').innerHTML = `${data.score}<span>/100</span>`;
-      document.querySelector('.container .content p').textContent = jobDescription.description;
+        // test data.job_description for empty object
+        if (data.job_description === undefined || data.job_description === null) {
+          router.navigate(`/profile/${userId}/${state}`);
+        }
 
-      const responsibilitiesUL = document.getElementById('responsibilities');
-      jobDescription.responsibilities.forEach(responsibility => {
-        let li = document.createElement('li');
-        li.textContent = responsibility;
-        responsibilitiesUL.appendChild(li);
-      });
+        const jobDescription = data.job_description;
 
-      const requiredSkillsUL = document.getElementById('required-skills');
-      jobDescription.required_skills.forEach(skill => {
-        let li = document.createElement('li');
-        li.textContent = skill;
-        requiredSkillsUL.appendChild(li);
-      });
+        document.querySelector('.container h1').textContent = jobDescription.title;
+        document.querySelector('.container .percentage').innerHTML = `${data.score}<span>/100</span>`;
+        document.querySelector('.container .content p').textContent = jobDescription.description;
 
-      const softSkillsUL = document.getElementById('soft-skills');
-      jobDescription.soft_skills.forEach(skill => {
-        let li = document.createElement('li');
-        li.textContent = skill;
-        softSkillsUL.appendChild(li);
-      });
-
-      if(jobDescription.benefits !== undefined && jobDescription.benefits !== null && jobDescription.benefits.length > 0) {
-        const benefitsUL = document.getElementById('benefits');
-        jobDescription.benefits.forEach(benefit => {
+        const responsibilitiesUL = document.getElementById('responsibilities');
+        jobDescription.responsibilities.forEach(responsibility => {
           let li = document.createElement('li');
-          li.textContent = benefit;
-          benefitsUL.appendChild(li);
+          li.textContent = responsibility;
+          responsibilitiesUL.appendChild(li);
         });
-      } else {
-        document.getElementById('benefits').innerHTML = '<li>No benefits listed</li>';
-      }
 
-      const chatButton = document.querySelector('.user-interaction-options .round-button.chat');
-      chatButton.addEventListener('click', () => {
-        router.navigate(`/chat/${userId}/${jobDescription.employer_id}`);
-      });
+        const requiredSkillsUL = document.getElementById('required-skills');
+        jobDescription.required_skills.forEach(skill => {
+          let li = document.createElement('li');
+          li.textContent = skill;
+          requiredSkillsUL.appendChild(li);
+        });
 
-      const likeButton = document.querySelector('.user-interaction-options .round-button.like');
-      likeButton.addEventListener('click', () => {
-        router.navigate(`/you/${userId}/${state}?page=${parseInt(page)+1}`);
-      });
+        const softSkillsUL = document.getElementById('soft-skills');
+        jobDescription.soft_skills.forEach(skill => {
+          let li = document.createElement('li');
+          li.textContent = skill;
+          softSkillsUL.appendChild(li);
+        });
+
+        if (jobDescription.benefits !== undefined && jobDescription.benefits !== null && jobDescription.benefits.length > 0) {
+          const benefitsUL = document.getElementById('benefits');
+          jobDescription.benefits.forEach(benefit => {
+            let li = document.createElement('li');
+            li.textContent = benefit;
+            benefitsUL.appendChild(li);
+          });
+        } else {
+          document.getElementById('benefits').innerHTML = '<li>No benefits listed</li>';
+        }
+
+        const chatButton = document.querySelector('.user-interaction-options .round-button.chat');
+        chatButton.addEventListener('click', () => {
+          router.navigate(`/chat/${userId}/${jobDescription.employer_id}`);
+        });
+
+        const likeButton = document.querySelector('.user-interaction-options .round-button.like');
+        likeButton.addEventListener('click', () => {
+          router.navigate(`/you/${userId}/${state}?page=${parseInt(page) + 1}`);
+        });
+      })();
     })
     .catch(error => {
       console.log('There has been a problem with your fetch operation: ', error);
@@ -333,8 +341,57 @@ function logout() {
   router.navigate('/login');
 }
 
-// Call this function on page load or periodically
-// checkTokenExpiry();
+function loadChat(userId, employerId) {
+  document.getElementById('header').innerHTML = '';
+  fetch(`${domain}/get-chat/${userId}/${employerId}`)
+    .then(response => {
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return response.json();
+    })
+    .then(data => {
+      (async () => {
+        await loadTemplate("chat.html", document.getElementById('app'));
+        await loadTemplate("chat-footer.html", document.getElementById('footer'));
+
+        document.querySelector('.chat-title p').textContent = data.job_description.title;
+
+        const chatMessages = document.querySelector('#chat-zone .chat-messages');
+
+        data.messages.forEach(message => {
+          let messageItemDiv = document.createElement('div');
+
+          if (message.sender === 'EMPLOYER') {
+            messageItemDiv.classList.add('message-item customer');
+          } else {
+            messageItemDiv.classList.add('message-item moderator');
+          }
+
+          let messageBlocDiv = document.createElement('div');
+          messageBlocDiv.classList.add('message-bloc');
+
+          let messageDiv = document.createElement('div');
+          messageDiv.classList.add('message');
+          messageDiv.textContent = message.message;
+
+          let dateTimeDiv = document.createElement('div');
+          dateTimeDiv.classList.add('date-time');
+          dateTimeDiv.textContent = message.date_time;
+
+          messageBlocDiv.appendChild(messageDiv);
+          messageBlocDiv.appendChild(dateTimeDiv);
+
+          messageItemDiv.appendChild(messageBlocDiv);
+
+          chatMessages.appendChild(messageItemDiv);
+        });
+      })();
+    })
+    .catch(error => {
+      console.log('There has been a problem with your fetch operation: ', error);
+    });
+}
 
 document.addEventListener('DOMContentLoaded', () => {
   const socket = io(domain, { transports: ['websocket'] });
@@ -411,16 +468,6 @@ document.addEventListener('DOMContentLoaded', () => {
       before(done, match) {
         checkTokenExpiry();
         (async () => {
-          await loadTemplate("foryou.html", document.getElementById('app'));
-          await loadTemplate("footer.html", document.getElementById('footer'));
-          await loadTemplate("header.html", document.getElementById('header'));
-          document.querySelector('#header h1').textContent = 'For You';
-
-          const avatar = document.querySelector('#header .avatar');
-          avatar.addEventListener('click', () => {
-            toggleProfileMenu(match.data.id, match.data.state);
-          }, false);
-
           getCompatibilityAnalysis(match.data.id, match.data.state, match.params.page);
 
           done();
@@ -465,56 +512,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }, {
       before(done, match) {
         checkTokenExpiry();
-        (async () => {
-          await loadTemplate("chat.html", document.getElementById('app'));
-          await loadTemplate("chat-footer.html", document.getElementById('footer'));
-
-          fetch(`${domain}/get-chat/${match.data.userId}/${match.data.employerId}`)
-            .then(response => {
-              if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-              }
-              return response.json();
-            })
-            .then(data => {
-              document.querySelector('.chat-title p').textContent = data.job_description.title;
-
-              const chatMessages = document.querySelector('#chat-zone .chat-messages');
-
-              data.messages.forEach(message => {
-                let messageItemDiv = document.createElement('div');
-
-                if (message.sender === 'EMPLOYER') {
-                  messageItemDiv.classList.add('message-item customer');
-                } else {
-                  messageItemDiv.classList.add('message-item moderator');
-                }
-
-                let messageBlocDiv = document.createElement('div');
-                messageBlocDiv.classList.add('message-bloc');
-
-                let messageDiv = document.createElement('div');
-                messageDiv.classList.add('message');
-                messageDiv.textContent = message.message;
-
-                let dateTimeDiv = document.createElement('div');
-                dateTimeDiv.classList.add('date-time');
-                dateTimeDiv.textContent = message.date_time;
-
-                messageBlocDiv.appendChild(messageDiv);
-                messageBlocDiv.appendChild(dateTimeDiv);
-
-                messageItemDiv.appendChild(messageBlocDiv);
-
-                chatMessages.appendChild(messageItemDiv);
-              });
-            })
-            .catch(error => {
-              console.log('There has been a problem with your fetch operation: ', error);
-            });
-
-          done();
-        })();
+        loadChat(match.data.userId, match.data.employerId);
+        done();
       }
     })
     .on("/upload-resume", (match) => {
