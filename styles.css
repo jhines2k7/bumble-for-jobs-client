@@ -122,7 +122,7 @@ body {
 #chat-input {
   background-color: aliceblue;
   bottom: 60px;
-  padding: 10px 0;
+  padding: 10px 10px;
 }
 .user-interaction-options {
   display: flex;
@@ -210,10 +210,11 @@ body {
   border: none; /* Removes the default border */
   outline: none; /* Removes the outline on focus */
   padding: 10px; /* Adds some space inside the input field */
-  width: 250px; /* Sets a specific width for the input field */
+  max-width: 400px; /* Sets a specific width for the input field */
   font-size: 16px; /* Sets the text size inside the input field */
   background-color: #f0f0f0; /* Sets a flat background color */
   box-shadow: none; /* Ensures no shadow for a flat design */
+  flex-grow: 1;
 }
 
 /* Optional: Style for when the input field is in focus */
@@ -228,14 +229,14 @@ body {
   padding: 15px 0;
   text-align: center;
   width: 100%;
+  background-color: #f0f0f0;
+  cursor: pointer;
 }
-.chat-title a {
-  font-size: larger;
-  text-decoration: none;
+.chat-title h1 {
   font-weight: bold;
 }
 #chat-zone {
-  margin: 60px 0 0 0;
+  margin: 10px 0 0 0;
   background: 0 0;
   overflow: auto;
   -webkit-overflow-scrolling: touch;
@@ -252,12 +253,12 @@ body {
 margin-bottom: 20px;
 }
 
-#chat-zone .chat-messages .message-item.moderator+.customer, #chat-zone .chat-messages .message-item.customer+.moderator {
+#chat-zone .chat-messages .message-item.sender+.receiver, #chat-zone .chat-messages .message-item.receiver+.sender {
   padding-top: 20px;
   margin-top: 20px;
 }
 
-#chat-zone .chat-messages .message-item.customer {
+#chat-zone .chat-messages .message-item.receiver {
   padding-left: 40px;
 }
 
@@ -285,7 +286,7 @@ margin-bottom: 20px;
   border: none;
 }
 
-#chat-zone .message-item.moderator .message-bloc {
+#chat-zone .message-item.sender .message-bloc {
   background-color: #3a4150;
   color: #fff;
   position: relative;
@@ -297,12 +298,12 @@ margin-bottom: 20px;
   border-radius: 5px 20px 20px 5px;
 }
 
-#chat-zone .message-item.customer .message-bloc {
+#chat-zone .message-item.receiver .message-bloc {
   color: rgba(0,0,0,.87);
   background-color: #e0e0e0;
 }
 
-#chat-zone .chat-messages .message-item.customer .message-bloc {
+#chat-zone .chat-messages .message-item.receiver .message-bloc {
   margin-left: auto;
 }
 
@@ -320,7 +321,7 @@ margin-bottom: 20px;
   line-height: 1.2;
 }
 
-#chat-zone .chat-messages .message-item.customer .message-bloc .date-time {
+#chat-zone .chat-messages .message-item.receiver .message-bloc .date-time {
   justify-content: flex-end;
   right: 0;
   margin-right: 12px;
@@ -338,11 +339,11 @@ margin-bottom: 20px;
   color: rgba(0,0,0,.54);
 }
 
-#chat-zone .message-item.customer .message-bloc {
+#chat-zone .message-item.receiver .message-bloc {
   border-radius: 20px 20px 20px 5px;
 }
 
-#chat-zone .message-item.moderator .message-bloc {
+#chat-zone .message-item.sender .message-bloc {
   border-radius: 20px 5px 20px 20px;
 }
 

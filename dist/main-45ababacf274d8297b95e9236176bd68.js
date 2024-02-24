@@ -19,9 +19,9 @@ async function loadTemplate(name, element) {
     });
 }
 
-function navigateToLastResolved() {
+function navigateToLastResolved(userId, state) {
   window.history.back();
-  toggleProfileMenu();
+  // toggleProfileMenu(userId, state);
 }
 
 function toggleProfileMenu(userId, state) {
@@ -93,161 +93,179 @@ function toggleProfileMenu(userId, state) {
   })();
 }
 
-function handleFileUpload(endpoint, user) {
-  let dropArea = document.querySelector('.upload-area-description'); // document.getElementById('drop-area');          
-  let fileInput = document.getElementById('file-input');
-  let uploadBtn = document.querySelector('.modal-footer .btn-primary'); // document.getElementById('upload-btn');
-  let cancelBtn = document.querySelector('.modal-footer .btn-secondary'); // document.getElementById('cancel-btn');
-  let fileBrowseBtn = document.querySelector('.modal-logo');
+function uploadFile(endpoint, user) {
+  var formData = new FormData();
 
-  // Highlight drop area when file is dragged over it
-  ['dragenter', 'dragover'].forEach(eventName => {
-    dropArea.addEventListener(eventName, highlight, false);
-  });
+  // Ensure there's at least one file selected
+  if (fileInput.files.length === 0) {
+    alert('Please select a file to upload.');
+    return;
+  }
 
-  ['dragleave', 'drop'].forEach(eventName => {
-    dropArea.addEventListener(eventName, unhighlight, false);
-  });
+  // Append the file to the FormData instance
+  formData.append('file', fileInput.files[0]);
+  formData.append('user', JSON.stringify(user));
 
-  // Handle file drop
-  dropArea.addEventListener('drop', handleDrop, false);
+  // Disable the button to prevent multiple uploads
+  this.disabled = true;
+  this.textContent = 'Uploading...';
 
-  // Handle file selection via input
-  fileInput.addEventListener('change', function () {
-    handleFiles(this.files);
-  }, false);
-
-  document.querySelector('.upload-area-description strong').addEventListener('click', function () {
-    // Trigger the file input when the div is clicked
-    fileInput.click();
-  });
-
-  fileBrowseBtn.addEventListener('click', function () {
-    fileInput.click();
-  });
-
-  // Handle the actual upload process
-  uploadBtn.addEventListener('click', function () {
-    var formData = new FormData();
-
-    // Ensure there's at least one file selected
-    if (fileInput.files.length === 0) {
-      alert('Please select a file to upload.');
-      return;
-    }
-
-    // Append the file to the FormData instance
-    formData.append('file', fileInput.files[0]);
-    formData.append('user', JSON.stringify(user));
-
-    // Disable the button to prevent multiple uploads
-    this.disabled = true;
-    this.textContent = 'Uploading...';
-
-    // Use Fetch API to post the FormData to the server
-    fetch(`${domain}/${endpoint}`, {
-      method: 'POST',
-      body: formData,
+  // Use Fetch API to post the FormData to the server
+  fetch(`${domain}/${endpoint}`, {
+    method: 'POST',
+    body: formData,
+  })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Network response was not ok ' + response.statusText);
+      }
+      console.log('Response:', response.json());
     })
-      .then(response => {
-        if (!response.ok) {
-          throw new Error('Network response was not ok ' + response.statusText);
-        }
-        console.log('Response:', response.json());
-      })
-      .then(data => {
-        console.log('Success:', data);
-        document.getElementById('file-to-upload').innerHTML = '';
-        document.getElementById('upload-status').innerText = 'Upload successful!';
-        // Re-enable the button
-        this.disabled = false;
-        this.textContent = 'Upload File';
-      })
-      .catch(error => {
-        console.error('Error:', error);
-        document.getElementById('file-to-upload').innerHTML = '';
-        document.getElementById('upload-status').innerText = 'Upload failed: ' + error.message;
-        // Re-enable the button
-        this.disabled = false;
-        this.textContent = 'Upload File';
-      });
-  });
+    .then(data => {
+      console.log('Success:', data);
+      document.getElementById('file-to-upload').innerHTML = '';
+      document.getElementById('upload-status').innerText = 'Upload successful!';
+      // Re-enable the button
+      this.disabled = false;
+      this.textContent = 'Upload File';
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      document.getElementById('file-to-upload').innerHTML = '';
+      document.getElementById('upload-status').innerText = 'Upload failed: ' + error.message;
+      // Re-enable the button
+      this.disabled = false;
+      this.textContent = 'Upload File';
+    });
+}
 
-  // Cancel button logic
-  cancelBtn.addEventListener('click', function () {
-    fileInput.value = ''; // Clear the input
-    // TODO: Any additional cancel logic
-    alert('Upload cancelled.');
-  });
+function handleFileUpload(endpoint, user) {
+  (async () => {
+    await loadTemplate("file-upload-ab22345fd6d9b7bda5962481f1af72af.html", document.getElementById('app'));
 
-  function highlight(e) {
-    dropArea.classList.add('highlight');
-  }
+    var overlay = document.body.lastElementChild;
+    overlay.remove();
 
-  function unhighlight(e) {
-    dropArea.classList.remove('highlight');
-  }
+    let profileMenu = document.getElementById('profile-menu');
+    profileMenu.classList.toggle('move-right');
 
-  function handleDrop(e) {
-    var dt = e.dataTransfer;
-    var files = dt.files;
+    // remove all markup from the footer
+    document.getElementById('footer').innerHTML = '';
+    document.getElementById('header').innerHTML = '';
 
-    handleFiles(files);
-  }
+    let dropArea = document.querySelector('.upload-area-description'); // document.getElementById('drop-area');          
+    let fileInput = document.getElementById('file-input');
+    let uploadBtn = document.querySelector('.modal-footer .btn-primary'); // document.getElementById('upload-btn');
+    let cancelBtn = document.querySelector('.modal-footer .btn-secondary'); // document.getElementById('cancel-btn');
+    let fileBrowseBtn = document.querySelector('.modal-logo');
 
-  function handleFiles(files) {
-    // Simple validation for demonstration purposes
-    const file = files[0];
-    if (!file) {
-      return; // No file selected
+    // Highlight drop area when file is dragged over it
+    ['dragenter', 'dragover'].forEach(eventName => {
+      dropArea.addEventListener(eventName, highlight, false);
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+      dropArea.addEventListener(eventName, unhighlight, false);
+    });
+
+    // Handle file drop
+    dropArea.addEventListener('drop', handleDrop, false);
+
+    // Handle file selection via input
+    fileInput.addEventListener('change', function () {
+      handleFiles(this.files);
+    }, false);
+
+    document.querySelector('.upload-area-description strong').addEventListener('click', function () {
+      // Trigger the file input when the div is clicked
+      fileInput.click();
+    });
+
+    fileBrowseBtn.addEventListener('click', function () {
+      fileInput.click();
+    });
+
+    // Handle the actual upload process
+    uploadBtn.addEventListener('click', function () {
+      uploadFile(endpoint, user);
+    });
+
+    // Cancel button logic
+    cancelBtn.addEventListener('click', function () {
+      fileInput.value = ''; // Clear the input
+      // TODO: Any additional cancel logic
+      alert('Upload cancelled.');
+    });
+
+    function highlight(e) {
+      dropArea.classList.add('highlight');
     }
 
-    // Validate the file type
-    const validTypes = ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'text/plain'];
-    if (!validTypes.includes(file.type)) {
-      alert('Please select valid file type: docx, pdf, or txt.');
-      return;
+    function unhighlight(e) {
+      dropArea.classList.remove('highlight');
     }
 
-    // Validate the file size (e.g., 2MB limit)
-    const maxSizeInBytes = 2 * 1024 * 1024; // 2MB
-    if (file.size > maxSizeInBytes) {
-      alert('The file is too large. Please select a file smaller than 2MB.');
-      return;
+    function handleDrop(e) {
+      var dt = e.dataTransfer;
+      var files = dt.files;
+
+      handleFiles(files);
     }
 
-    uploadBtn.disabled = false;
+    function handleFiles(files) {
+      // Simple validation for file type and size
+      const file = files[0];
+      if (!file) {
+        return; // No file selected
+      }
 
-    // add an icon for the file type
-    /*
-    <div class="icon pdf">PDF</div>
-    <div class="icon xls">XLS</div>
-    <div class="icon doc">DOC</div>
-    */
-    const fileTypeLookup = {
-      'application/pdf': 'pdf',
-      'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'doc',
-      'text/plain': 'txt'
-    };
+      // Validate the file type
+      const validTypes = ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'text/plain'];
+      if (!validTypes.includes(file.type)) {
+        alert('Please select valid file type: docx, pdf, or txt.');
+        return;
+      }
 
-    const fileType = fileTypeLookup[file.type];
+      // Validate the file size (e.g., 2MB limit)
+      const maxSizeInBytes = 2 * 1024 * 1024; // 2MB
+      if (file.size > maxSizeInBytes) {
+        alert('The file is too large. Please select a file smaller than 2MB.');
+        return;
+      }
 
-    let icon = document.createElement('div');
-    icon.classList.add('icon');
-    icon.classList.add(fileType);
-    icon.textContent = fileType.toUpperCase();
+      uploadBtn.disabled = false;
 
-    let p = document.createElement('p');
-    p.textContent = file.name;
+      // add an icon for the file type
+      /*
+      <div class="icon pdf">PDF</div>
+      <div class="icon xls">XLS</div>
+      <div class="icon doc">DOC</div>
+      */
+      const fileTypeLookup = {
+        'application/pdf': 'pdf',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'doc',
+        'text/plain': 'txt'
+      };
 
-    document.getElementById('file-to-upload').innerHTML = '';
-    document.getElementById('file-to-upload').appendChild(icon);
-    document.getElementById('file-to-upload').appendChild(p);
-  }
+      const fileType = fileTypeLookup[file.type];
+
+      let icon = document.createElement('div');
+      icon.classList.add('icon');
+      icon.classList.add(fileType);
+      icon.textContent = fileType.toUpperCase();
+
+      let p = document.createElement('p');
+      p.textContent = file.name;
+
+      document.getElementById('file-to-upload').innerHTML = '';
+      document.getElementById('file-to-upload').appendChild(icon);
+      document.getElementById('file-to-upload').appendChild(p);
+    }
+  })();
 }
 
 function getCompatibilityAnalysis(userId, state, page) {
-  fetch(`${domain}/get-compatibility-analysis/${userId}/${state}?page=${page}`)
+  fetch(`${domain}/get-compatibility-analysis/user_id/${userId}/state/${state}?page=${page}`)
     .then(response => {
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -261,42 +279,46 @@ function getCompatibilityAnalysis(userId, state, page) {
 
         await loadTemplate("header-eec68ed32b504a4e1b1ec348d14774e8.html", document.getElementById('header'));
         document.querySelector('#header h1').textContent = 'For You';
-        
-        // test data.job_description for empty object
-        if (data.job_description === undefined || data.job_description === null) {
+
+        document.querySelector('#header .avatar').addEventListener('click', () => {
+          toggleProfileMenu(userId, state);
+        });
+
+        // test data.job_posting for empty object
+        if (data.job_posting === undefined || data.job_posting === null) {
           router.navigate(`/profile/${userId}/${state}`);
         }
 
-        const jobDescription = data.job_description;
+        const jobPosting = data.job_posting;
 
-        document.querySelector('.container h1').textContent = jobDescription.title;
+        document.querySelector('.container h1').textContent = jobPosting.title;
         document.querySelector('.container .percentage').innerHTML = `${data.score}<span>/100</span>`;
-        document.querySelector('.container .content p').textContent = jobDescription.description;
+        document.querySelector('.container .content p').textContent = jobPosting.description;
 
         const responsibilitiesUL = document.getElementById('responsibilities');
-        jobDescription.responsibilities.forEach(responsibility => {
+        jobPosting.responsibilities.forEach(responsibility => {
           let li = document.createElement('li');
           li.textContent = responsibility;
           responsibilitiesUL.appendChild(li);
         });
 
         const requiredSkillsUL = document.getElementById('required-skills');
-        jobDescription.required_skills.forEach(skill => {
+        jobPosting.required_skills.forEach(skill => {
           let li = document.createElement('li');
           li.textContent = skill;
           requiredSkillsUL.appendChild(li);
         });
 
         const softSkillsUL = document.getElementById('soft-skills');
-        jobDescription.soft_skills.forEach(skill => {
+        jobPosting.soft_skills.forEach(skill => {
           let li = document.createElement('li');
           li.textContent = skill;
           softSkillsUL.appendChild(li);
         });
 
-        if (jobDescription.benefits !== undefined && jobDescription.benefits !== null && jobDescription.benefits.length > 0) {
+        if (jobPosting.benefits !== undefined && jobPosting.benefits !== null && jobPosting.benefits.length > 0) {
           const benefitsUL = document.getElementById('benefits');
-          jobDescription.benefits.forEach(benefit => {
+          jobPosting.benefits.forEach(benefit => {
             let li = document.createElement('li');
             li.textContent = benefit;
             benefitsUL.appendChild(li);
@@ -307,7 +329,7 @@ function getCompatibilityAnalysis(userId, state, page) {
 
         const chatButton = document.querySelector('.user-interaction-options .round-button.chat');
         chatButton.addEventListener('click', () => {
-          router.navigate(`/chat/${userId}/${jobDescription.employer_id}`);
+          router.navigate(`/chat?job_seeker_id=${userId}&employer_id=${jobPosting.employer_id}&job_posting_id=${jobPosting.id}`);
         });
 
         const likeButton = document.querySelector('.user-interaction-options .round-button.like');
@@ -322,7 +344,6 @@ function getCompatibilityAnalysis(userId, state, page) {
 }
 
 function checkTokenExpiry() {
-  return;
   const token = localStorage.getItem('access_token');
   if (token) {
     const payload = JSON.parse(atob(token.split('.')[1]));
@@ -334,6 +355,38 @@ function checkTokenExpiry() {
   }
 }
 
+function parseJwt(token) {
+  try {
+    // Split the token into its parts
+    const base64Url = token.split('.')[1];
+    // Replace URL-safe characters and decode
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const jsonPayload = decodeURIComponent(atob(base64).split('').map(function (c) {
+      return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+    }).join(''));
+
+    // Parse the decoded payload
+    return JSON.parse(jsonPayload);
+  } catch (e) {
+    console.error("Error decoding JWT:", e);
+    return null;
+  }
+}
+
+function createSvg(hashValue, size) {
+  var svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  svg.setAttributeNS(null, "width", size);
+  svg.setAttributeNS(null, "height", size);
+  svg.setAttributeNS(null, "data-jdenticon-value", hashValue);
+  return svg;
+}
+
+function appendIdenticon(hashValue, size, targetElement) {
+  var identicon = createSvg(hashValue, size);
+  document.querySelector(targetElement).appendChild(identicon);
+  jdenticon.update(identicon);
+}
+
 function logout() {
   // Remove the token from localStorage or sessionStorage
   localStorage.removeItem('access_token');
@@ -341,8 +394,67 @@ function logout() {
   router.navigate('/login');
 }
 
-// Call this function on page load or periodically
-// checkTokenExpiry();
+function loadChat(userId, employerId, jobPostingId) {
+  document.getElementById('header').innerHTML = '';
+
+  fetch(`${domain}/get-chat?job_seeker_id=${userId}&employer_id=${employerId}&job_posting_id=${jobPostingId}`)
+    .then(response => {
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return response.json();
+    })
+    .then(data => {
+      (async () => {
+        await loadTemplate("chat-e3ced1041616beb104ddc20e5db64dac.html", document.getElementById('app'));
+        await loadTemplate("chat-footer-8cb9441ae82b8cbeb26c69a888275874.html", document.getElementById('footer'));
+
+        document.querySelector('.chat-title h1').textContent = data.job_title;
+
+        const chatMessages = document.querySelector('#chat-zone .chat-messages');
+
+        const token = localStorage.getItem('access_token');
+
+        let userId = null;
+        const decodedToken = parseJwt(token);
+        if (decodedToken) {
+          userId = decodedToken.user_id;
+          console.log("User ID:", userId);
+        }
+
+        data.chat.messages.forEach(message => {
+          let messageItemDiv = document.createElement('div');
+
+          if (message.sender_id === userId) {
+            messageItemDiv.classList.add('message-item', 'sender');
+          } else {
+            messageItemDiv.classList.add('message-item', 'receiver');
+          }
+
+          let messageBlocDiv = document.createElement('div');
+          messageBlocDiv.classList.add('message-bloc');
+
+          let messageDiv = document.createElement('div');
+          messageDiv.classList.add('message');
+          messageDiv.textContent = message.content;
+
+          let dateTimeDiv = document.createElement('div');
+          dateTimeDiv.classList.add('date-time');
+          dateTimeDiv.textContent = message.date;
+
+          messageBlocDiv.appendChild(messageDiv);
+          messageBlocDiv.appendChild(dateTimeDiv);
+
+          messageItemDiv.appendChild(messageBlocDiv);
+
+          chatMessages.appendChild(messageItemDiv);
+        });
+      })();
+    })
+    .catch(error => {
+      console.log('There has been a problem with your fetch operation: ', error);
+    });
+}
 
 document.addEventListener('DOMContentLoaded', () => {
   const socket = io(domain, { transports: ['websocket'] });
@@ -391,27 +503,25 @@ document.addEventListener('DOMContentLoaded', () => {
     }, {
       before(done) {
         (async () => {
-          await loadTemplate("login-a89aeb4d882525f6323a07d6175f0b36.html", document.getElementById('app'));
           document.getElementById('footer').innerHTML = '';
+          document.getElementById('header').innerHTML = '';
+          await loadTemplate("login-a89aeb4d882525f6323a07d6175f0b36.html", document.getElementById('app'));
           done();
         })();
       }
     })
-    .on("/", (match) => {
+    .on("", (match) => {
       console.log(`Match value on home route: ${JSON.stringify(match)}`);
-    }, {
-      before(done) {
-        checkTokenExpiry();
-        (async () => {
-          await loadTemplate("home.html", document.getElementById('app'));
-          await loadTemplate("footer-11c9a829e91bc79349c29e61c42c5fb8.html", document.getElementById('footer'));
-
-          await loadTemplate("header-eec68ed32b504a4e1b1ec348d14774e8.html", document.getElementById('header'));
-          document.querySelector('#header h1').textContent = 'Home';
-
-          done();
-        })();
+      checkTokenExpiry();
+      // get claims from the token
+      const token = localStorage.getItem('access_token');
+      const decodedToken = parseJwt(token);
+      if (decodedToken) {
+        console.log("User ID:", decodedToken.user_id);
+        console.log("User State:", decodedToken.state);
+        // appendIdenticon(decodedToken.user_id, 40, '#header');
       }
+      router.navigate(`/you/${decodedToken.user_id}/${decodedToken.state}?page=1`);
     })
     .on("/you/:id/:state", (match) => {
       console.log(`Match value on you route: ${JSON.stringify(match)}`);
@@ -458,61 +568,13 @@ document.addEventListener('DOMContentLoaded', () => {
         })();
       }
     })
-    .on("/chat/:userId/:employerId", (match) => {
+    .on("/chat", (match) => {
       console.log(`Match value on chat route: ${JSON.stringify(match)}`);
     }, {
       before(done, match) {
         checkTokenExpiry();
-        (async () => {
-          await loadTemplate("chat-020049d53271ba6aceafeeb167120764.html", document.getElementById('app'));
-          await loadTemplate("chat-footer-8cb9441ae82b8cbeb26c69a888275874.html", document.getElementById('footer'));
-
-          fetch(`${domain}/get-chat/${match.data.userId}/${match.data.employerId}`)
-            .then(response => {
-              if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-              }
-              return response.json();
-            })
-            .then(data => {
-              document.querySelector('.chat-title p').textContent = data.job_description.title;
-
-              const chatMessages = document.querySelector('#chat-zone .chat-messages');
-
-              data.messages.forEach(message => {
-                let messageItemDiv = document.createElement('div');
-
-                if (message.sender === 'EMPLOYER') {
-                  messageItemDiv.classList.add('message-item customer');
-                } else {
-                  messageItemDiv.classList.add('message-item moderator');
-                }
-
-                let messageBlocDiv = document.createElement('div');
-                messageBlocDiv.classList.add('message-bloc');
-
-                let messageDiv = document.createElement('div');
-                messageDiv.classList.add('message');
-                messageDiv.textContent = message.message;
-
-                let dateTimeDiv = document.createElement('div');
-                dateTimeDiv.classList.add('date-time');
-                dateTimeDiv.textContent = message.date_time;
-
-                messageBlocDiv.appendChild(messageDiv);
-                messageBlocDiv.appendChild(dateTimeDiv);
-
-                messageItemDiv.appendChild(messageBlocDiv);
-
-                chatMessages.appendChild(messageItemDiv);
-              });
-            })
-            .catch(error => {
-              console.log('There has been a problem with your fetch operation: ', error);
-            });
-
-          done();
-        })();
+        loadChat(match.params.job_seeker_id, match.params.employer_id, match.params.job_posting_id);
+        done();
       }
     })
     .on("/upload-resume", (match) => {
@@ -537,27 +599,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }, {
       before(done, match) {
         checkTokenExpiry();
-        (async () => {
-          await loadTemplate("file-upload-ab22345fd6d9b7bda5962481f1af72af.html", document.getElementById('app'));
-
-          var overlay = document.body.lastElementChild;
-          overlay.remove();
-
-          let profileMenu = document.getElementById('profile-menu');
-          profileMenu.classList.toggle('move-right');
-
-          // remove all markup from the footer
-          document.getElementById('footer').innerHTML = '';
-
-          const user = {
-            id: match.data.userId,
-            state: match.data.state,
-          };
-
-          handleFileUpload('upload/resume', user);
-
-          done();
-        })();
+        const user = {
+          id: match.data.userId,
+          state: match.data.state,
+        };
+        handleFileUpload('upload/resume', user);
+        done();
       }
     })
     .on("/settings/:userId", (match) => {
