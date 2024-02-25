@@ -707,3 +707,45 @@ input, button, select, textarea {
 .container .info span .fa {
   color: #EF3B3A;
 }
+
+/* cards */
+.contact-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 1rem;
+}
+
+/* styles.css */
+body {
+  font-family: Arial, sans-serif;
+}
+
+.contact-card {
+  background-color: #ffffff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  display: inline-block;
+  vertical-align: top;
+}
+
+.contact-header {
+  text-align: center;
+  font-size: 60px;
+  color: #333;
+  margin-bottom: 8px;
+  font-weight: bold;
+}
+
+.contact-title {
+  font-size: 16px;
+  color: #555;
+  margin-bottom: 4px;
+}
+
+.contact-location {
+  font-size: 12px;
+  color: #555;
+}

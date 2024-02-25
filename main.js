@@ -264,8 +264,75 @@ function handleFileUpload(endpoint, user) {
   })();
 }
 
-function getCompatibilityAnalysis(userId, state, page) {
-  fetch(`${domain}/get-compatibility-analysis/user_id/${userId}/state/${state}?page=${page}`)
+function getJobPostings(userId, state, page) {
+  
+
+  fetch(`${domain}/get-jobpostings?id=${userId}&state=${state}&page=${page}`)
+    .then(res => res.json())
+    .then(data => {
+      (async () => {
+        await loadTemplate("gallery.html", document.getElementById('app'));
+        const userCardTemplate = document.querySelector("[data-contact-card-template]")
+        const userCardContainer = document.querySelector("[data-contact-cards-container]")
+
+        await loadTemplate("footer.html", document.getElementById('footer'));
+
+        await loadTemplate("header.html", document.getElementById('header'));
+        document.querySelector('#header h1').textContent = 'For You';
+
+        document.querySelector('#header .avatar').addEventListener('click', () => {
+          toggleProfileMenu(userId, state);
+        });
+
+        data.analysis_list.map(analysis => {
+          console.log(`analysis: ${analysis}`);
+          const card = userCardTemplate.content.cloneNode(true).children[0]
+          const header = card.querySelector("[data-header]");
+          const jobTitle = card.querySelector("[data-title]");
+          const location = card.querySelector("[data-location]");
+          header.textContent = analysis.normalized_score;
+          jobTitle.textContent = analysis.job_title;
+          location.textContent = analysis.location;
+          userCardContainer.append(card);          
+        })
+      })();
+    })
+}
+
+function getJobSeekers(userId, state, page) {
+  const userCardTemplate = document.querySelector("[data-user-template]")
+  const userCardContainer = document.querySelector("[data-user-cards-container]")
+
+  fetch(`${domain}/${endpoint}/get-jobseekers/${userId}/state/${state}?page=${page}`)
+    .then(res => res.json())
+    .then(data => {
+      (async () => {
+        await loadTemplate("foryou.html", document.getElementById('app'));
+        await loadTemplate("footer.html", document.getElementById('footer'));
+
+        await loadTemplate("header.html", document.getElementById('header'));
+        document.querySelector('#header h1').textContent = 'For You';
+
+        document.querySelector('#header .avatar').addEventListener('click', () => {
+          toggleProfileMenu(userId, state);
+        });
+
+        data.map(jobSeeker => {
+          const card = userCardTemplate.content.cloneNode(true).children[0]
+          const header = card.querySelector("[data-header]");
+          const email = card.querySelector("[data-email]");
+          const phone = card.querySelector("[data-phone]");
+          header.textContent = user.name;
+          email.textContent = user.email;
+          phone.textContent = user.phone;
+          userCardContainer.append(card);          
+        })
+      })();
+    })
+}
+
+function getJobPosting(id) {
+  fetch(`${domain}/get-jobposting/${id}`)
     .then(response => {
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -274,7 +341,7 @@ function getCompatibilityAnalysis(userId, state, page) {
     })
     .then(data => {
       (async () => {
-        await loadTemplate("foryou.html", document.getElementById('app'));
+        await loadTemplate("jobposting.html", document.getElementById('app'));
         await loadTemplate("footer.html", document.getElementById('footer'));
 
         await loadTemplate("header.html", document.getElementById('header'));
@@ -346,12 +413,15 @@ function getCompatibilityAnalysis(userId, state, page) {
 function checkTokenExpiry() {
   const token = localStorage.getItem('access_token');
   if (token) {
+    console.log("Token:", token);
     const payload = JSON.parse(atob(token.split('.')[1]));
     const expiry = payload.exp;
     const now = Date.now() / 1000; // Convert to seconds
     if (now > expiry) {
       logout(); // Token has expired, log the user out
     }
+  } else {
+    logout(); // No token found, log the user out
   }
 }
 
@@ -464,6 +534,16 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   router
+    .on(() => {
+      console.log('Matched the default route');
+      checkTokenExpiry();
+      // get claims from the token
+      const token = localStorage.getItem('access_token');
+      const decodedToken = parseJwt(token);
+      if (decodedToken) {
+        router.navigate(`/foryou/${decodedToken.user_id}/${decodedToken.state}?page=1`);
+      }
+    })
     .on("/login", (match) => {
       console.log(`Match value on login route: ${JSON.stringify(match)}`);
       let loginForm = document.querySelector('.form .login-form');
@@ -493,7 +573,7 @@ document.addEventListener('DOMContentLoaded', () => {
               // Store the JWT in localStorage or session storage
               localStorage.setItem('access_token', data.access_token);
 
-              router.navigate(`/you/${data.id}/${data.state}?page=1`);
+              router.navigate(`/foryou/${data.id}/${data.state}?page=1`);
             } else {
               alert('Login failed');
             }
@@ -510,17 +590,26 @@ document.addEventListener('DOMContentLoaded', () => {
         })();
       }
     })
-    .on("", (match) => {
-      console.log(`Match value on home route: ${JSON.stringify(match)}`);
-      checkTokenExpiry();
-      // get claims from the token
-      const token = localStorage.getItem('access_token');
-      const decodedToken = parseJwt(token);
-      if (decodedToken) {
-        router.navigate(`/you/${decodedToken.user_id}/${decodedToken.state}?page=1`);
+    .on("/foryou/:userId/:state", (match) => {
+      console.log(`Match value on for you route: ${JSON.stringify(match)}`);
+    }, {
+      before(done, match) {
+        checkTokenExpiry();
+        // get claims from the token
+        const token = localStorage.getItem('access_token');
+        const decodedToken = parseJwt(token);
+        console.log("Decoded token:", decodedToken);
+        if (decodedToken) {
+          if (decodedToken.roles.includes('EMPLOYER')) {
+            getJobSeekers(match.data.userId, match.data.state, match.params.page);
+          } else {
+            getJobPostings(match.data.userId, match.data.state, match.params.page);
+          }
+        }
+        done();
       }
     })
-    .on("/you/:id/:state", (match) => {
+    .on("/job-posting/:id", (match) => {
       console.log(`Match value on you route: ${JSON.stringify(match)}`);
     }, {
       before(done, match) {
@@ -533,7 +622,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (decodedToken.roles.includes('EMPLOYER')) {
               router.navigate(`/chats/${decodedToken.user_id}`);
             } else {
-              getCompatibilityAnalysis(match.data.id, match.data.state, match.params.page);
+              getJobPosting(match.data.id);
             }
           }
 
@@ -555,21 +644,6 @@ document.addEventListener('DOMContentLoaded', () => {
           /*    <div class="chat-title">
                   <a href="#/you/12345678">&lt; Communication, Society and Media (Job Title)</a>
                 </div> */
-          done();
-        })();
-      }
-    })
-    .on("/daily/:userId", (match) => {
-      console.log(`Match value on daily route: ${JSON.stringify(match)}`);
-    }, {
-      before(done, match) {
-        checkTokenExpiry();
-        (async () => {
-          await loadTemplate("dailypicks.html", document.getElementById('app'));
-          await loadTemplate("footer.html", document.getElementById('footer'));
-
-          await loadTemplate("header.html", document.getElementById('header'));
-          document.querySelector('#header h1').textContent = 'Daily Picks';
           done();
         })();
       }
