@@ -1,7 +1,7 @@
 const router = new Navigo('/', { hash: true });
 let profileMenu = document.getElementById('profile-menu');
 let hammer = new Hammer(profileMenu);
-const domain = 'http://localhost:8000';
+const domain = 'https://bfj.generalsolutions43.com';
 
 async function loadTemplate(name, element) {
   return fetch(`templates/${name}`)
@@ -26,7 +26,7 @@ function navigateToLastResolved(userId, state) {
 
 function toggleProfileMenu(userId, state) {
   (async () => {
-    await loadTemplate("profile-menu.html", document.getElementById('profile-menu'));
+    await loadTemplate("profile-menu-1f935f85c6e7f25c6680156b02caacba.html", document.getElementById('profile-menu'));
 
     // create a transparent overlay to prevent scrolling and clicking
     let overlay = document.createElement('div');
@@ -141,7 +141,7 @@ function uploadFile(endpoint, user) {
 
 function handleFileUpload(endpoint, user) {
   (async () => {
-    await loadTemplate("file-upload.html", document.getElementById('app'));
+    await loadTemplate("file-upload-ab22345fd6d9b7bda5962481f1af72af.html", document.getElementById('app'));
 
     var overlay = document.body.lastElementChild;
     overlay.remove();
@@ -269,13 +269,13 @@ function getJobPostings(userId, state, page) {
     .then(res => res.json())
     .then(data => {
       (async () => {
-        await loadTemplate("gallery.html", document.getElementById('app'));
+        await loadTemplate("gallery-c19d9754e1f5b1e666792eb31d52e6ed.html", document.getElementById('app'));
         const userCardTemplate = document.querySelector("[data-contact-card-template]")
         const userCardContainer = document.querySelector("[data-contact-cards-container]")
 
-        await loadTemplate("footer.html", document.getElementById('footer'));
+        await loadTemplate("footer-11c9a829e91bc79349c29e61c42c5fb8.html", document.getElementById('footer'));
 
-        await loadTemplate("header.html", document.getElementById('header'));
+        await loadTemplate("header-eec68ed32b504a4e1b1ec348d14774e8.html", document.getElementById('header'));
         document.querySelector('#header h1').textContent = 'For You';
 
         document.querySelector('#header .avatar').addEventListener('click', () => {
@@ -309,10 +309,10 @@ function getJobSeekers(userId, state, page) {
     .then(res => res.json())
     .then(data => {
       (async () => {
-        await loadTemplate("foryou.html", document.getElementById('app'));
-        await loadTemplate("footer.html", document.getElementById('footer'));
+        await loadTemplate("foryou-d41d8cd98f00b204e9800998ecf8427e.html", document.getElementById('app'));
+        await loadTemplate("footer-11c9a829e91bc79349c29e61c42c5fb8.html", document.getElementById('footer'));
 
-        await loadTemplate("header.html", document.getElementById('header'));
+        await loadTemplate("header-eec68ed32b504a4e1b1ec348d14774e8.html", document.getElementById('header'));
         document.querySelector('#header h1').textContent = 'For You';
 
         document.querySelector('#header .avatar').addEventListener('click', () => {
@@ -343,10 +343,10 @@ function getJobPosting(id) {
     })
     .then(data => {
       (async () => {
-        await loadTemplate("job-posting.html", document.getElementById('app'));
-        await loadTemplate("footer.html", document.getElementById('footer'));
+        await loadTemplate("job-posting-68b405b145000f38dbd20b638b1c97aa.html", document.getElementById('app'));
+        await loadTemplate("footer-11c9a829e91bc79349c29e61c42c5fb8.html", document.getElementById('footer'));
 
-        await loadTemplate("header.html", document.getElementById('header'));
+        await loadTemplate("header-eec68ed32b504a4e1b1ec348d14774e8.html", document.getElementById('header'));
         document.querySelector('#header h1').textContent = 'For You';
 
         document.querySelector('#header .avatar').addEventListener('click', () => {
@@ -473,8 +473,8 @@ function loadChat(userId, employerId, jobPostingId) {
     })
     .then(data => {
       (async () => {
-        await loadTemplate("chat.html", document.getElementById('app'));
-        await loadTemplate("chat-footer.html", document.getElementById('footer'));
+        await loadTemplate("chat-e3ced1041616beb104ddc20e5db64dac.html", document.getElementById('app'));
+        await loadTemplate("chat-footer-8cb9441ae82b8cbeb26c69a888275874.html", document.getElementById('footer'));
 
         document.querySelector('.chat-title h1').textContent = data.job_title;
 
@@ -582,7 +582,7 @@ document.addEventListener('DOMContentLoaded', () => {
         (async () => {
           document.getElementById('footer').innerHTML = '';
           document.getElementById('header').innerHTML = '';
-          await loadTemplate("login.html", document.getElementById('app'));
+          await loadTemplate("login-a89aeb4d882525f6323a07d6175f0b36.html", document.getElementById('app'));
           done();
         })();
       }
@@ -624,10 +624,10 @@ document.addEventListener('DOMContentLoaded', () => {
       before(done, match) {
         checkTokenExpiry();
         (async () => {
-          await loadTemplate("chats.html", document.getElementById('app'));
-          await loadTemplate("footer.html", document.getElementById('footer'));
+          await loadTemplate("chats-7aaaad2c6390698810e0a82353682c12.html", document.getElementById('app'));
+          await loadTemplate("footer-11c9a829e91bc79349c29e61c42c5fb8.html", document.getElementById('footer'));
 
-          await loadTemplate("header.html", document.getElementById('header'));
+          await loadTemplate("header-eec68ed32b504a4e1b1ec348d14774e8.html", document.getElementById('header'));
           document.querySelector('#header h1').textContent = 'Chats';
           done();
         })();
@@ -648,7 +648,7 @@ document.addEventListener('DOMContentLoaded', () => {
       before(done, match) {
         checkTokenExpiry();
         (async () => {
-          await loadTemplate("file-upload.html", document.getElementById('app'));
+          await loadTemplate("file-upload-ab22345fd6d9b7bda5962481f1af72af.html", document.getElementById('app'));
 
           // remove all markup from the footer
           document.getElementById('footer').innerHTML = '';
@@ -678,7 +678,7 @@ document.addEventListener('DOMContentLoaded', () => {
       before(done, match) {
         checkTokenExpiry();
         (async () => {
-          await loadTemplate("settings.html", document.getElementById('app'));
+          await loadTemplate("settings-d41d8cd98f00b204e9800998ecf8427e.html", document.getElementById('app'));
 
           done();
         })();
@@ -690,7 +690,7 @@ document.addEventListener('DOMContentLoaded', () => {
       before(done, match) {
         checkTokenExpiry();
         (async () => {
-          await loadTemplate("preferences.html", document.getElementById('app'));
+          await loadTemplate("preferences-d41d8cd98f00b204e9800998ecf8427e.html", document.getElementById('app'));
 
           done();
         })();

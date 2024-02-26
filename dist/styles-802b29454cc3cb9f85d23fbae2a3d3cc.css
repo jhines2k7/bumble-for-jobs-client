@@ -9,9 +9,12 @@ body {
 }
 .container {
   width: 100%;
-  max-width: 400px;
+  max-width: 440px;
   margin: 0 auto;
   position: relative;
+  background-color: #f0f0f0;
+  box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.3), -5px -5px 10px rgba(255, 255, 255, 0.5);
+  padding: 20px;
 }
 .title {
   font-size: 24px;
@@ -23,21 +26,25 @@ body {
 }
 .content {
   border-top: 2px solid black;
-  padding-top: 10px;
+  padding: 10px 0 65px 0;
   margin-top: 10px;
 }
 .content h2 {
   font-size: 18px;
-  margin: 0 0 10px 0;
+  margin: 10px 0 10px 0;
   font-weight: bold;
 }
-.content p {
+.content p, .content ul {
   font-size: 14px;
   margin: 0;
   padding: 0 0 0 20px;
 }
+.content ul {
+  list-style: circle;
+  padding: 0 0 0 40px;
+}
 .percentage {
-  font-size: 250px;
+  font-size: 225px;
   line-height: 1;
   font-weight: bold;
   margin: 20px auto;
@@ -45,7 +52,9 @@ body {
   text-align: center;
 }
 .percentage span {
-  font-size: 25px;
+  font-size: 35px;
+  position: relative;
+  left: -15px;
 }
 .footer {
   position: fixed;
@@ -95,11 +104,11 @@ body {
   height: 40px;
 }
 .chat {
-  background-color: skyblue;
+  background-color: #87ceeb;
   margin-right: 10px;
 }
 .like {
-  background-color: lightcoral;
+  background-color: #f08080;
 }
 #interaction-controls, #chat-input {
   display: flex;
@@ -113,7 +122,7 @@ body {
 #chat-input {
   background-color: aliceblue;
   bottom: 60px;
-  padding: 10px 0;
+  padding: 10px 10px;
 }
 .user-interaction-options {
   display: flex;
@@ -201,10 +210,11 @@ body {
   border: none; /* Removes the default border */
   outline: none; /* Removes the outline on focus */
   padding: 10px; /* Adds some space inside the input field */
-  width: 250px; /* Sets a specific width for the input field */
+  max-width: 400px; /* Sets a specific width for the input field */
   font-size: 16px; /* Sets the text size inside the input field */
   background-color: #f0f0f0; /* Sets a flat background color */
   box-shadow: none; /* Ensures no shadow for a flat design */
+  flex-grow: 1;
 }
 
 /* Optional: Style for when the input field is in focus */
@@ -216,18 +226,17 @@ body {
   top: 0;
   left: 0;
   z-index: 100;
-  background-color: aliceblue;
   padding: 15px 0;
   text-align: center;
   width: 100%;
+  background-color: #f0f0f0;
+  cursor: pointer;
 }
-.chat-title a {
-  font-size: larger;
-  text-decoration: none;
+.chat-title h1 {
   font-weight: bold;
 }
 #chat-zone {
-  margin: 60px 0 0 0;
+  margin: 10px 0 0 0;
   background: 0 0;
   overflow: auto;
   -webkit-overflow-scrolling: touch;
@@ -244,12 +253,12 @@ body {
 margin-bottom: 20px;
 }
 
-#chat-zone .chat-messages .message-item.moderator+.customer, #chat-zone .chat-messages .message-item.customer+.moderator {
+#chat-zone .chat-messages .message-item.sender+.receiver, #chat-zone .chat-messages .message-item.receiver+.sender {
   padding-top: 20px;
   margin-top: 20px;
 }
 
-#chat-zone .chat-messages .message-item.customer {
+#chat-zone .chat-messages .message-item.receiver {
   padding-left: 40px;
 }
 
@@ -277,7 +286,7 @@ margin-bottom: 20px;
   border: none;
 }
 
-#chat-zone .message-item.moderator .message-bloc {
+#chat-zone .message-item.sender .message-bloc {
   background-color: #3a4150;
   color: #fff;
   position: relative;
@@ -289,12 +298,12 @@ margin-bottom: 20px;
   border-radius: 5px 20px 20px 5px;
 }
 
-#chat-zone .message-item.customer .message-bloc {
+#chat-zone .message-item.receiver .message-bloc {
   color: rgba(0,0,0,.87);
   background-color: #e0e0e0;
 }
 
-#chat-zone .chat-messages .message-item.customer .message-bloc {
+#chat-zone .chat-messages .message-item.receiver .message-bloc {
   margin-left: auto;
 }
 
@@ -312,7 +321,7 @@ margin-bottom: 20px;
   line-height: 1.2;
 }
 
-#chat-zone .chat-messages .message-item.customer .message-bloc .date-time {
+#chat-zone .chat-messages .message-item.receiver .message-bloc .date-time {
   justify-content: flex-end;
   right: 0;
   margin-right: 12px;
@@ -330,11 +339,11 @@ margin-bottom: 20px;
   color: rgba(0,0,0,.54);
 }
 
-#chat-zone .message-item.customer .message-bloc {
+#chat-zone .message-item.receiver .message-bloc {
   border-radius: 20px 20px 20px 5px;
 }
 
-#chat-zone .message-item.moderator .message-bloc {
+#chat-zone .message-item.sender .message-bloc {
   border-radius: 20px 5px 20px 20px;
 }
 
@@ -600,3 +609,151 @@ input, button, select, textarea {
   background:#63b345;
 }
 
+/* login */
+
+@import url(https://fonts.googleapis.com/css?family=Roboto:300);
+
+.login-page {
+  /*background: #76b852; fallback for old browsers
+  background: rgb(141,194,111);
+  background: linear-gradient(90deg, rgba(141,194,111,1) 0%, rgba(118,184,82,1) 50%);
+  font-family: "Roboto", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;*/
+  width: 360px;
+  padding: 8% 0 0;
+  margin: auto;
+}
+.form {
+  position: relative;
+  z-index: 1;
+  background: #FFFFFF;
+  max-width: 360px;
+  margin: 0 auto 100px;
+  padding: 45px;
+  text-align: center;
+  box-shadow: 0 0 20px 0 rgba(0, 0, 0, 0.2), 0 5px 5px 0 rgba(0, 0, 0, 0.24);
+}
+.form input {
+  font-family: "Roboto", sans-serif;
+  outline: 0;
+  background: #f2f2f2;
+  width: 100%;
+  border: 0;
+  margin: 0 0 15px;
+  padding: 15px;
+  box-sizing: border-box;
+  font-size: 14px;
+}
+.form button {
+  font-family: "Roboto", sans-serif;
+  text-transform: uppercase;
+  outline: 0;
+  background: #4CAF50;
+  width: 100%;
+  border: 0;
+  padding: 15px;
+  color: #FFFFFF;
+  font-size: 14px;
+  -webkit-transition: all 0.3 ease;
+  transition: all 0.3 ease;
+  cursor: pointer;
+}
+.form button:hover,.form button:active,.form button:focus {
+  background: #43A047;
+}
+.form .message {
+  margin: 15px 0 0;
+  color: #b3b3b3;
+  font-size: 12px;
+}
+.form .message a {
+  color: #4CAF50;
+  text-decoration: none;
+}
+.form .register-form {
+  display: none;
+}
+/* .container {
+  position: relative;
+  z-index: 1;
+  max-width: 300px;
+  margin: 0 auto;
+} */
+.container:before, .container:after {
+  content: "";
+  display: block;
+  clear: both;
+}
+.container .info {
+  margin: 50px auto;
+  text-align: center;
+}
+.container .info h1 {
+  margin: 0 0 15px;
+  padding: 0;
+  font-size: 36px;
+  font-weight: 300;
+  color: #1a1a1a;
+}
+.container .info span {
+  color: #4d4d4d;
+  font-size: 12px;
+}
+.container .info span a {
+  color: #000000;
+  text-decoration: none;
+}
+.container .info span .fa {
+  color: #EF3B3A;
+}
+
+/* cards */
+.contact-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 1rem;
+}
+
+/* styles.css */
+body {
+  font-family: Arial, sans-serif;
+}
+
+.contact-card {
+  background-color: #ffffff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  display: inline-block;
+  vertical-align: top;
+}
+
+.contact-header {
+  text-align: center;
+  color: #333;
+  margin-bottom: 8px;
+  font-weight: bold;
+}
+
+.contact-header h1 {
+  font-size: 60px;
+  display: inline-block;
+}
+
+.contact-header span {
+  font-size: 12px;
+}
+
+.contact-title {
+  font-size: 16px;
+  color: #555;
+  margin-bottom: 4px;
+}
+
+.contact-location {
+  font-size: 12px;
+  color: #555;
+}
