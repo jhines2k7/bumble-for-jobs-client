@@ -265,9 +265,7 @@ function handleFileUpload(endpoint, user) {
 }
 
 function getJobPostings(userId, state, page) {
-  
-
-  fetch(`${domain}/get-jobpostings?id=${userId}&state=${state}&page=${page}`)
+  fetch(`${domain}/job-postings?id=${userId}&state=${state}&page=${page}`)
     .then(res => res.json())
     .then(data => {
       (async () => {
@@ -284,15 +282,19 @@ function getJobPostings(userId, state, page) {
           toggleProfileMenu(userId, state);
         });
 
-        data.analysis_list.map(analysis => {
-          console.log(`analysis: ${analysis}`);
+        data.job_postings.map(posting => {
+          console.log(`job posting: ${posting}`);
           const card = userCardTemplate.content.cloneNode(true).children[0]
+          card.addEventListener('click', () => {
+            router.navigate(`/job-posting/${posting.id}`);
+          });
+
           const header = card.querySelector("[data-header]");
           const jobTitle = card.querySelector("[data-title]");
           const location = card.querySelector("[data-location]");
-          header.textContent = analysis.normalized_score;
-          jobTitle.textContent = analysis.job_title;
-          location.textContent = analysis.location;
+          header.innerHTML = `<h1>${posting.normalized_score}</h1><span>/100</span>`;
+          jobTitle.textContent = posting.job_title;
+          location.textContent = posting.location;
           userCardContainer.append(card);          
         })
       })();
@@ -303,7 +305,7 @@ function getJobSeekers(userId, state, page) {
   const userCardTemplate = document.querySelector("[data-user-template]")
   const userCardContainer = document.querySelector("[data-user-cards-container]")
 
-  fetch(`${domain}/${endpoint}/get-jobseekers/${userId}/state/${state}?page=${page}`)
+  fetch(`${domain}/${endpoint}/jobseekers/${userId}/state/${state}?page=${page}`)
     .then(res => res.json())
     .then(data => {
       (async () => {
@@ -332,7 +334,7 @@ function getJobSeekers(userId, state, page) {
 }
 
 function getJobPosting(id) {
-  fetch(`${domain}/get-jobposting/${id}`)
+  fetch(`${domain}/job-postings/${id}`)
     .then(response => {
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -341,7 +343,7 @@ function getJobPosting(id) {
     })
     .then(data => {
       (async () => {
-        await loadTemplate("jobposting-68b405b145000f38dbd20b638b1c97aa.html", document.getElementById('app'));
+        await loadTemplate("job-posting-68b405b145000f38dbd20b638b1c97aa.html", document.getElementById('app'));
         await loadTemplate("footer-11c9a829e91bc79349c29e61c42c5fb8.html", document.getElementById('footer'));
 
         await loadTemplate("header-eec68ed32b504a4e1b1ec348d14774e8.html", document.getElementById('header'));
@@ -351,15 +353,10 @@ function getJobPosting(id) {
           toggleProfileMenu(userId, state);
         });
 
-        // test data.job_posting for empty object
-        if (data.job_posting === undefined || data.job_posting === null) {
-          router.navigate(`/profile/${userId}/${state}`);
-        }
-
         const jobPosting = data.job_posting;
 
         document.querySelector('.container h1').textContent = jobPosting.title;
-        document.querySelector('.container .percentage').innerHTML = `${data.score}<span>/100</span>`;
+        document.querySelector('.container .percentage').innerHTML = `${data.normalized_score}<span>/100</span>`;
         document.querySelector('.container .content p').textContent = jobPosting.description;
 
         const responsibilitiesUL = document.getElementById('responsibilities');
@@ -615,17 +612,8 @@ document.addEventListener('DOMContentLoaded', () => {
       before(done, match) {
         checkTokenExpiry();
         (async () => {
-          // get claims from the token
-          const token = localStorage.getItem('access_token');
-          const decodedToken = parseJwt(token);
-          if (decodedToken) {
-            if (decodedToken.roles.includes('EMPLOYER')) {
-              router.navigate(`/chats/${decodedToken.user_id}`);
-            } else {
-              getJobPosting(match.data.id);
-            }
-          }
-
+          getJobPosting(match.data.id);
+          
           done();
         })();
       }
@@ -641,9 +629,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
           await loadTemplate("header-eec68ed32b504a4e1b1ec348d14774e8.html", document.getElementById('header'));
           document.querySelector('#header h1').textContent = 'Chats';
-          /*    <div class="chat-title">
-                  <a href="#/you/12345678">&lt; Communication, Society and Media (Job Title)</a>
-                </div> */
           done();
         })();
       }

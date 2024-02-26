@@ -733,10 +733,18 @@ body {
 
 .contact-header {
   text-align: center;
-  font-size: 60px;
   color: #333;
   margin-bottom: 8px;
   font-weight: bold;
+}
+
+.contact-header h1 {
+  font-size: 60px;
+  display: inline-block;
+}
+
+.contact-header span {
+  font-size: 12px;
 }
 
 .contact-title {
