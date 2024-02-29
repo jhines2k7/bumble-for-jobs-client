@@ -264,7 +264,43 @@ function handleFileUpload(endpoint, user) {
   })();
 }
 
-function getJobPostings(userId, state, page) {
+function getJobPostListing(employerId, state) {
+  fetch(`${domain}/job-post-listing/employer-id/${employerId}/state/${state}`)
+    .then(res => res.json())
+    .then(data => {
+      (async () => {
+        await loadTemplate("job-post-listing.html", document.getElementById('app'));
+        await loadTemplate("footer.html", document.getElementById('footer'));
+
+        await loadTemplate("header.html", document.getElementById('header'));
+        document.querySelector('#header h1').textContent = 'Job Posts';
+
+        document.querySelector('#header .avatar').addEventListener('click', () => {
+          toggleProfileMenu(employerId, state);
+        });
+
+        const cardTemplate = document.querySelector("[data-job-post-card-template]")
+        const cardContainer = document.querySelector("[data-job-post-card-container]")
+        console.log('job listing data: ' + data);
+        data.map(post => {
+          const card = cardTemplate.content.cloneNode(true).children[0]
+          card.addEventListener('click', () => {
+            router.navigate(`/job-seekers/${post.id}`);
+          });
+
+          const jobTitle = card.querySelector("[data-title]");
+          const location = card.querySelector("[data-location]");
+          const count = card.querySelector("[data-count]");
+          jobTitle.textContent = post.title;
+          location.textContent = post.location;
+          count.textContent = post.count;
+          cardContainer.append(card);          
+        })
+      })();
+    });
+}
+
+function getJobPosts(userId, state, page) {
   fetch(`${domain}/job-postings?id=${userId}&state=${state}&page=${page}`)
     .then(res => res.json())
     .then(data => {
@@ -282,59 +318,38 @@ function getJobPostings(userId, state, page) {
           toggleProfileMenu(userId, state);
         });
 
-        data.job_postings.map(posting => {
-          console.log(`job posting: ${posting}`);
+        data.job_posts.map(post => {
+          console.log(`job post: ${post}`);
           const card = userCardTemplate.content.cloneNode(true).children[0]
           card.addEventListener('click', () => {
-            router.navigate(`/job-posting/${posting.id}`);
+            router.navigate(`/job-post/${post.id}`);
           });
 
           const header = card.querySelector("[data-header]");
           const jobTitle = card.querySelector("[data-title]");
           const location = card.querySelector("[data-location]");
-          header.innerHTML = `<h1>${posting.normalized_score}</h1><span>/100</span>`;
-          jobTitle.textContent = posting.job_title;
-          location.textContent = posting.location;
+          header.innerHTML = `<h1>${post.normalized_score}</h1><span>/100</span>`;
+          jobTitle.textContent = post.job_title;
+          location.textContent = post.location;
           userCardContainer.append(card);          
         })
       })();
     })
 }
 
-function getJobSeekers(userId, state, page) {
-  const userCardTemplate = document.querySelector("[data-user-template]")
-  const userCardContainer = document.querySelector("[data-user-cards-container]")
+function toSentenceCase(str) {
+  // Split the string into an array of words
+  let words = str.split('_');
 
-  fetch(`${domain}/${endpoint}/jobseekers/${userId}/state/${state}?page=${page}`)
-    .then(res => res.json())
-    .then(data => {
-      (async () => {
-        await loadTemplate("foryou.html", document.getElementById('app'));
-        await loadTemplate("footer.html", document.getElementById('footer'));
+  // Capitalize the first letter of the first word
+  words[0] = words[0].charAt(0).toUpperCase() + words[0].slice(1);
 
-        await loadTemplate("header.html", document.getElementById('header'));
-        document.querySelector('#header h1').textContent = 'For You';
-
-        document.querySelector('#header .avatar').addEventListener('click', () => {
-          toggleProfileMenu(userId, state);
-        });
-
-        data.map(jobSeeker => {
-          const card = userCardTemplate.content.cloneNode(true).children[0]
-          const header = card.querySelector("[data-header]");
-          const email = card.querySelector("[data-email]");
-          const phone = card.querySelector("[data-phone]");
-          header.textContent = user.name;
-          email.textContent = user.email;
-          phone.textContent = user.phone;
-          userCardContainer.append(card);          
-        })
-      })();
-    })
+  // Join the words back into a string with spaces
+  return words.join(' ');
 }
 
-function getJobPosting(id) {
-  fetch(`${domain}/job-postings/${id}`)
+function getCompatibilityAnalysis(id) {
+  fetch(`${domain}/compatibility-analysis/${id}/job-seeker`)
     .then(response => {
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -343,7 +358,81 @@ function getJobPosting(id) {
     })
     .then(data => {
       (async () => {
-        await loadTemplate("job-posting.html", document.getElementById('app'));
+        await loadTemplate("compatibility-analysis.html", document.getElementById('app'));
+        await loadTemplate("footer.html", document.getElementById('footer'));
+
+        await loadTemplate("header.html", document.getElementById('header'));
+        document.querySelector('#header h1').textContent = 'Compatibility Analysis';
+
+        document.querySelector('#header .avatar').addEventListener('click', () => {
+          toggleProfileMenu(userId, state);
+        });
+
+        let ul = document.querySelector('.container ul');
+
+        // loop through the keys of the object
+        for (let key in data.compatibility_analysis) {
+          let sentenceCasedKey = toSentenceCase(key);
+
+          let li = document.createElement('li');
+          li.textContent = `${sentenceCasedKey}: ${data.compatibility_analysis[key]}`;
+          ul.appendChild(li);
+        }
+      })();
+    })
+    .catch(error => {
+      console.log('There has been a problem with your fetch operation: ', error);
+    });
+}
+
+function getJobSeekers(jobPostId) {  
+  fetch(`${domain}/job-seekers/${jobPostId}`)
+    .then(res => res.json())
+    .then(data => {
+      (async () => {
+        
+        await loadTemplate("gallery.html", document.getElementById('app'));
+        await loadTemplate("footer.html", document.getElementById('footer'));
+        
+        await loadTemplate("header.html", document.getElementById('header'));
+        document.querySelector('#header h1').textContent = 'For You';
+        
+        document.querySelector('#header .avatar').addEventListener('click', () => {
+          toggleProfileMenu(userId, state);
+        });
+        
+        const userCardTemplate = document.querySelector("[data-contact-card-template]")
+        const userCardContainer = document.querySelector("[data-contact-cards-container]")
+
+        data.job_seekers.map(jobSeeker => {
+          const card = userCardTemplate.content.cloneNode(true).children[0]
+          card.addEventListener('click', () => {
+            router.navigate(`/compatibility-analysis/${jobSeeker.analysis_id}`);
+          });
+
+          const header = card.querySelector("[data-header]");
+          const username = card.querySelector("[data-title]");
+          const location = card.querySelector("[data-location]");
+          header.innerHTML = `<h1>${jobSeeker.normalized_score}</h1><span>/100</span>`;
+          username.textContent = jobSeeker.username;
+          location.textContent = `${jobSeeker.city}, ${jobSeeker.state}`;
+          userCardContainer.append(card);          
+        })
+      })();
+    })
+}
+
+function getJobPost(id) {
+  fetch(`${domain}/job-posts/${id}`)
+    .then(response => {
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return response.json();
+    })
+    .then(data => {
+      (async () => {
+        await loadTemplate("job-post.html", document.getElementById('app'));
         await loadTemplate("footer.html", document.getElementById('footer'));
 
         await loadTemplate("header.html", document.getElementById('header'));
@@ -353,36 +442,36 @@ function getJobPosting(id) {
           toggleProfileMenu(userId, state);
         });
 
-        const jobPosting = data.job_posting;
+        const jobPost = data.job_post;
 
-        document.querySelector('.container h1').textContent = jobPosting.title;
+        document.querySelector('.container h1').textContent = jobPost.title;
         document.querySelector('.container .percentage').innerHTML = `${data.normalized_score}<span>/100</span>`;
-        document.querySelector('.container .content p').textContent = jobPosting.description;
+        document.querySelector('.container .content p').textContent = jobPost.description;
 
         const responsibilitiesUL = document.getElementById('responsibilities');
-        jobPosting.responsibilities.forEach(responsibility => {
+        jobPost.responsibilities.forEach(responsibility => {
           let li = document.createElement('li');
           li.textContent = responsibility;
           responsibilitiesUL.appendChild(li);
         });
 
         const requiredSkillsUL = document.getElementById('required-skills');
-        jobPosting.required_skills.forEach(skill => {
+        jobPost.required_skills.forEach(skill => {
           let li = document.createElement('li');
           li.textContent = skill;
           requiredSkillsUL.appendChild(li);
         });
 
         const softSkillsUL = document.getElementById('soft-skills');
-        jobPosting.soft_skills.forEach(skill => {
+        jobPost.soft_skills.forEach(skill => {
           let li = document.createElement('li');
           li.textContent = skill;
           softSkillsUL.appendChild(li);
         });
 
-        if (jobPosting.benefits !== undefined && jobPosting.benefits !== null && jobPosting.benefits.length > 0) {
+        if (jobPost.benefits !== undefined && jobPost.benefits !== null && jobPost.benefits.length > 0) {
           const benefitsUL = document.getElementById('benefits');
-          jobPosting.benefits.forEach(benefit => {
+          jobPost.benefits.forEach(benefit => {
             let li = document.createElement('li');
             li.textContent = benefit;
             benefitsUL.appendChild(li);
@@ -393,7 +482,7 @@ function getJobPosting(id) {
 
         const chatButton = document.querySelector('.user-interaction-options .round-button.chat');
         chatButton.addEventListener('click', () => {
-          router.navigate(`/chat?job_seeker_id=${userId}&employer_id=${jobPosting.employer_id}&job_posting_id=${jobPosting.id}`);
+          router.navigate(`/chat?job_seeker_id=${userId}&employer_id=${jobPost.employer_id}&job_posting_id=${jobPost.id}`);
         });
 
         const likeButton = document.querySelector('.user-interaction-options .round-button.like');
@@ -461,10 +550,10 @@ function logout() {
   router.navigate('/login');
 }
 
-function loadChat(userId, employerId, jobPostingId) {
+function loadChat(userId, employerId, jobPostId) {
   document.getElementById('header').innerHTML = '';
 
-  fetch(`${domain}/get-chat?job_seeker_id=${userId}&employer_id=${employerId}&job_posting_id=${jobPostingId}`)
+  fetch(`${domain}/get-chat?job_seeker_id=${userId}&employer_id=${employerId}&job_post_id=${jobPostId}`)
     .then(response => {
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -548,7 +637,7 @@ document.addEventListener('DOMContentLoaded', () => {
       loginForm.addEventListener('submit', function (e) {
         e.preventDefault();
 
-        const username = document.querySelector('.login-form input[type="text"]').value;
+        const email = document.querySelector('.login-form input[type="text"]').value;
         const password = document.querySelector('.login-form input[type="password"]').value;
 
         fetch(`${domain}/login`, {
@@ -556,7 +645,7 @@ document.addEventListener('DOMContentLoaded', () => {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ username: username, password: password }),
+          body: JSON.stringify({ email: email, password: password }),
         })
           .then(response => {
             if (!response.ok) {
@@ -598,7 +687,8 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log("Decoded token:", decodedToken);
         if (decodedToken) {
           if (decodedToken.roles.includes('EMPLOYER')) {
-            getJobSeekers(match.data.userId, match.data.state, match.params.page);
+            getJobPostListing(match.data.userId, match.data.state);
+            // getJobSeekers(match.data.userId, match.data.state);
           } else {
             getJobPostings(match.data.userId, match.data.state, match.params.page);
           }
@@ -606,7 +696,16 @@ document.addEventListener('DOMContentLoaded', () => {
         done();
       }
     })
-    .on("/job-posting/:id", (match) => {
+    .on("/job-seekers/:jobPostId", (match) => {
+      console.log(`Match value on job seekers route: ${JSON.stringify(match)}`);
+    }, {
+      before(done, match) {
+        checkTokenExpiry();
+        getJobSeekers(match.data.jobPostId);
+        done();
+      }
+    })
+    .on("/job-post/:id", (match) => {
       console.log(`Match value on you route: ${JSON.stringify(match)}`);
     }, {
       before(done, match) {
@@ -614,6 +713,16 @@ document.addEventListener('DOMContentLoaded', () => {
         (async () => {
           getJobPosting(match.data.id);
           
+          done();
+        })();
+      }
+    })
+    .on("/compatibility-analysis/:analysisId", (match) => {
+    }, {
+      before(done, match) {
+        checkTokenExpiry();
+        (async () => {
+          getCompatibilityAnalysis(match.data.analysisId);
           done();
         })();
       }
