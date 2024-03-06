@@ -301,7 +301,7 @@ function getJobPostListing(employerId, state) {
 }
 
 function getJobPosts(userId, state, page) {
-  fetch(`${domain}/job-postings?id=${userId}&state=${state}&page=${page}`)
+  fetch(`${domain}/job-posts?id=${userId}&state=${state}&page=${page}`)
     .then(res => res.json())
     .then(data => {
       (async () => {
@@ -659,7 +659,13 @@ document.addEventListener('DOMContentLoaded', () => {
               // Store the JWT in localStorage or session storage
               localStorage.setItem('access_token', data.access_token);
 
-              router.navigate(`/foryou/${data.id}/${data.state}?page=1`);
+              // get claims from the access token
+              const decodedToken = parseJwt(data.access_token);
+              console.log("Decoded token:", decodedToken);
+              if (decodedToken) {
+                router.navigate(`/foryou/${decodedToken.user_id}/${decodedToken.state}?page=1`);
+              }
+
             } else {
               alert('Login failed');
             }
@@ -690,7 +696,7 @@ document.addEventListener('DOMContentLoaded', () => {
             getJobPostListing(match.data.userId, match.data.state);
             // getJobSeekers(match.data.userId, match.data.state);
           } else {
-            getJobPostings(match.data.userId, match.data.state, match.params.page);
+            getJobPosts(match.data.userId, match.data.state, match.params.page);
           }
         }
         done();
@@ -711,7 +717,7 @@ document.addEventListener('DOMContentLoaded', () => {
       before(done, match) {
         checkTokenExpiry();
         (async () => {
-          getJobPosting(match.data.id);
+          getJobPost(match.data.id);
           
           done();
         })();
