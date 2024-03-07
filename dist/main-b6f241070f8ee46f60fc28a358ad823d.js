@@ -3,6 +3,8 @@ let profileMenu = document.getElementById('profile-menu');
 let hammer = new Hammer(profileMenu);
 const domain = 'https://bfj.generalsolutions43.com';
 
+const socket = io(domain, { transports: ['websocket'] });
+
 async function loadTemplate(name, element) {
   return fetch(`templates/${name}`)
     .then(response => {
@@ -460,6 +462,11 @@ function getJobPost(id) {
     })
     .then(data => {
       (async () => {
+        let decodedToken = parseJwt(localStorage.getItem('access_token'));
+        let userId = null;
+        if (decodedToken) {
+          userId = decodedToken.user_id;
+        }
         await loadTemplate("job-post-68b405b145000f38dbd20b638b1c97aa.html", document.getElementById('app'));
         await loadTemplate("footer-11c9a829e91bc79349c29e61c42c5fb8.html", document.getElementById('footer'));
 
@@ -497,7 +504,9 @@ function getJobPost(id) {
           softSkillsUL.appendChild(li);
         });
 
-        if (jobPost.benefits !== undefined && jobPost.benefits !== null && jobPost.benefits.length > 0) {
+        if (typeof jobPost.benefits === 'string') {
+          document.getElementById('benefits').innerHTML = `<li>${jobPost.benefits}</li>`;
+        } else if (Array.isArray(jobPost.benefits) && jobPost.benefits.length > 0) {
           const benefitsUL = document.getElementById('benefits');
           jobPost.benefits.forEach(benefit => {
             let li = document.createElement('li');
@@ -578,10 +587,15 @@ function logout() {
   router.navigate('/login');
 }
 
-function loadChat(userId, employerId, jobPostId) {
+function loadChat(jobSeekerId, employerId, jobPostId) {
   document.getElementById('header').innerHTML = '';
 
-  fetch(`${domain}/get-chat?job_seeker_id=${userId}&employer_id=${employerId}&job_post_id=${jobPostId}`)
+  fetch(`${domain}/chat?job_seeker_id=${jobSeekerId}&employer_id=${employerId}&job_post_id=${jobPostId}`, {
+    method: 'GET',
+    headers: {
+      'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+    }
+  })
     .then(response => {
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -624,7 +638,7 @@ function loadChat(userId, employerId, jobPostId) {
 
           let dateTimeDiv = document.createElement('div');
           dateTimeDiv.classList.add('date-time');
-          dateTimeDiv.textContent = message.date;
+          dateTimeDiv.textContent = formatTime12hr(new Date(message.date));
 
           messageBlocDiv.appendChild(messageDiv);
           messageBlocDiv.appendChild(dateTimeDiv);
@@ -633,6 +647,67 @@ function loadChat(userId, employerId, jobPostId) {
 
           chatMessages.appendChild(messageItemDiv);
         });
+
+        let chatInput = document.querySelector('#chat-input input[type="text"]');
+
+        let sendButton = document.querySelector('#chat-input button');
+        sendButton.addEventListener('click', function () {
+          const content = chatInput.value;
+          chatInput.value = '';
+
+          let messageItemDiv = document.createElement('div');
+
+          messageItemDiv.classList.add('message-item', 'sender');
+
+          let messageBlocDiv = document.createElement('div');
+          messageBlocDiv.classList.add('message-bloc');
+
+          let messageDiv = document.createElement('div');
+          messageDiv.classList.add('message');
+          messageDiv.textContent = content;
+
+          let dateTimeDiv = document.createElement('div');
+          dateTimeDiv.classList.add('date-time');
+          const now = new Date();
+          dateTimeDiv.textContent = formatTime12hr(now);
+
+          messageBlocDiv.appendChild(messageDiv);
+          messageBlocDiv.appendChild(dateTimeDiv);
+
+          messageItemDiv.appendChild(messageBlocDiv);
+
+          chatMessages.appendChild(messageItemDiv);
+
+          /*
+          id: str
+          content: str
+          sender_id: str
+          receiver_id: str
+          date: datetime
+          read: bool
+          read_time: Optional[datetime] = None
+          message_type: str
+          status: str
+          */
+
+          socket.emit('message_sent', {
+            chat_id: data.chat.id,
+            job_post_id: jobPostId,
+            message: {
+              sender_id: decodedToken.user_id,
+              receiver_id: data.receiver_id,
+              date: now.toISOString(),
+              read: false,
+              read_time: null,
+              message_type: 'text',
+              job_post_id: jobPostId,
+              content: content,
+              status: 'sent'
+            }
+          });
+        });
+
+        socket.emit('join_chat', { chat_id: data.chat.id });
       })();
     })
     .catch(error => {
@@ -640,12 +715,61 @@ function loadChat(userId, employerId, jobPostId) {
     });
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-  const socket = io(domain, { transports: ['websocket'] });
+function formatTime12hr(date) {
+  let hours = date.getHours();
+  const minutes = date.getMinutes();
+  const ampm = hours >= 12 ? 'PM' : 'AM';
 
+  hours = hours % 12;
+  hours = hours ? hours : 12; // the hour '0' should be '12'
+  const minutesPadded = minutes < 10 ? '0' + minutes : minutes;
+
+  const formattedTime = hours + ':' + minutesPadded + ' ' + ampm;
+  return formattedTime;
+}
+
+function registerSocketIOEventListeners() {
   socket.on('connect', () => {
     console.log('Connected to the server');
   });
+
+  socket.on('new_message', (data) => {
+    checkTokenExpiry();
+    const chatMessages = document.querySelector('#chat-zone .chat-messages');
+
+    let messageItemDiv = document.createElement('div');
+
+    messageItemDiv.classList.add('message-item', 'sender');
+
+    let messageBlocDiv = document.createElement('div');
+    messageBlocDiv.classList.add('message-bloc');
+
+    let messageDiv = document.createElement('div');
+    messageDiv.classList.add('message'); 
+    messageDiv.textContent = data.message.content;
+
+    let dateTimeDiv = document.createElement('div');
+    dateTimeDiv.classList.add('date-time');
+    const messageTime = new Date(data.message.date);
+    dateTimeDiv.textContent = formatTime12hr(messageTime);
+
+    messageBlocDiv.appendChild(messageDiv);
+    messageBlocDiv.appendChild(dateTimeDiv);
+
+    messageItemDiv.appendChild(messageBlocDiv);
+
+    chatMessages.appendChild(messageItemDiv);
+
+    socket.emit('message_received', { message: data.message, chat_id: data.chat_id, job_post_id: data.job_post_id });
+  });
+
+  socket.on('chat_joined', (data) => {
+    console.log(`Joined chat: ${data.chat_id}`);
+  });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  registerSocketIOEventListeners();
 
   router
     .on(() => {

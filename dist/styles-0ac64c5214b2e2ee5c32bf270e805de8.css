@@ -15,6 +15,7 @@ body {
   background-color: #f0f0f0;
   box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.3), -5px -5px 10px rgba(255, 255, 255, 0.5);
   padding: 20px;
+  height: 100vh;
 }
 .title {
   font-size: 24px;
@@ -237,10 +238,11 @@ body {
 }
 #chat-zone {
   margin: 10px 0 0 0;
-  background: 0 0;
+  position: fixed;
+  bottom: 140px;
   overflow: auto;
   -webkit-overflow-scrolling: touch;
-  padding: 0 0 120px 0;
+  padding: 0 0 0 0;
 }
 
 #chat-zone .chat-messages .message-item {
@@ -674,12 +676,6 @@ input, button, select, textarea {
 .form .register-form {
   display: none;
 }
-/* .container {
-  position: relative;
-  z-index: 1;
-  max-width: 300px;
-  margin: 0 auto;
-} */
 .container:before, .container:after {
   content: "";
   display: block;
