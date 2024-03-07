@@ -114,6 +114,9 @@ function uploadFile(endpoint, user) {
   fetch(`${domain}/${endpoint}`, {
     method: 'POST',
     body: formData,
+    headers: {
+      'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+    }
   })
     .then(response => {
       if (!response.ok) {
@@ -265,7 +268,12 @@ function handleFileUpload(endpoint, user) {
 }
 
 function getJobPostListing(employerId, state) {
-  fetch(`${domain}/job-post-listing/employer-id/${employerId}/state/${state}`)
+  fetch(`${domain}/job-post-listing`, {
+    method: 'GET',
+    headers: {
+      'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+    }
+  })
     .then(res => res.json())
     .then(data => {
       (async () => {
@@ -294,14 +302,19 @@ function getJobPostListing(employerId, state) {
           jobTitle.textContent = post.title;
           location.textContent = post.location;
           count.textContent = post.count;
-          cardContainer.append(card);          
+          cardContainer.append(card);
         })
       })();
     });
 }
 
 function getJobPosts(userId, state, page) {
-  fetch(`${domain}/job-posts?id=${userId}&state=${state}&page=${page}`)
+  fetch(`${domain}/job-posts?page=${page}`, {
+    method: 'GET',
+    headers: {
+      'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+    }
+  })
     .then(res => res.json())
     .then(data => {
       (async () => {
@@ -331,7 +344,7 @@ function getJobPosts(userId, state, page) {
           header.innerHTML = `<h1>${post.normalized_score}</h1><span>/100</span>`;
           jobTitle.textContent = post.job_title;
           location.textContent = post.location;
-          userCardContainer.append(card);          
+          userCardContainer.append(card);
         })
       })();
     })
@@ -349,7 +362,12 @@ function toSentenceCase(str) {
 }
 
 function getCompatibilityAnalysis(id) {
-  fetch(`${domain}/compatibility-analysis/${id}/job-seeker`)
+  fetch(`${domain}/compatibility-analysis/${id}`, {
+    method: 'GET',
+    headers: {
+      'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+    }
+  })
     .then(response => {
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -385,22 +403,27 @@ function getCompatibilityAnalysis(id) {
     });
 }
 
-function getJobSeekers(jobPostId) {  
-  fetch(`${domain}/job-seekers/${jobPostId}`)
+function getJobSeekers(jobPostId) {
+  fetch(`${domain}/job-seekers/${jobPostId}`, {
+    method: 'GET',
+    headers: {
+      'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+    }
+  })
     .then(res => res.json())
     .then(data => {
       (async () => {
-        
+
         await loadTemplate("gallery.html", document.getElementById('app'));
         await loadTemplate("footer.html", document.getElementById('footer'));
-        
+
         await loadTemplate("header.html", document.getElementById('header'));
         document.querySelector('#header h1').textContent = 'For You';
-        
+
         document.querySelector('#header .avatar').addEventListener('click', () => {
           toggleProfileMenu(userId, state);
         });
-        
+
         const userCardTemplate = document.querySelector("[data-contact-card-template]")
         const userCardContainer = document.querySelector("[data-contact-cards-container]")
 
@@ -416,14 +439,19 @@ function getJobSeekers(jobPostId) {
           header.innerHTML = `<h1>${jobSeeker.normalized_score}</h1><span>/100</span>`;
           username.textContent = jobSeeker.username;
           location.textContent = `${jobSeeker.city}, ${jobSeeker.state}`;
-          userCardContainer.append(card);          
+          userCardContainer.append(card);
         })
       })();
     })
 }
 
 function getJobPost(id) {
-  fetch(`${domain}/job-posts/${id}`)
+  fetch(`${domain}/job-posts?compatibility-analysis-id=${id}`, {
+    method: 'GET',
+    headers: {
+      'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+    }
+  })
     .then(response => {
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -718,7 +746,7 @@ document.addEventListener('DOMContentLoaded', () => {
         checkTokenExpiry();
         (async () => {
           getJobPost(match.data.id);
-          
+
           done();
         })();
       }
