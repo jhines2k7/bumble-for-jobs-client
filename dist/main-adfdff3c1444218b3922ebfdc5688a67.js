@@ -370,6 +370,23 @@ function toSentenceCase(str) {
   return words.join(' ');
 }
 
+function updateFixedElementSizeAndPosition() {
+  const parent = document.querySelector('.container');
+  const rect = parent.getBoundingClientRect(); // Get position & size of parent
+  
+  const fixedElement = document.querySelector('#chat-zone .chat-messages');
+  
+  if (fixedElement) {
+    // Set size and position to match parent
+    fixedElement.style.width = `${rect.width}px`;
+    fixedElement.style.height = `${rect.height}px`;
+    // fixedElement.style.top = `${rect.top - 280}px`;
+    fixedElement.style.left = `${rect.left}px`;
+  } else {
+    console.error('Fixed element not found');
+  }
+}
+
 function getCompatibilityAnalysis(id) {
   fetch(`${domain}/compatibility-analysis/${id}`, {
     method: 'GET',
@@ -385,7 +402,7 @@ function getCompatibilityAnalysis(id) {
     })
     .then(data => {
       (async () => {
-        await loadTemplate("compatibility-analysis-c0f550e56db8ccae4a329d42e06fe73c.html", document.getElementById('app'));
+        await loadTemplate("compatibility-analysis-716957fdcb7d3eb5377e4559ea005f87.html", document.getElementById('app'));
         await loadTemplate("footer-11c9a829e91bc79349c29e61c42c5fb8.html", document.getElementById('footer'));
 
         await loadTemplate("header-eec68ed32b504a4e1b1ec348d14774e8.html", document.getElementById('header'));
@@ -394,6 +411,9 @@ function getCompatibilityAnalysis(id) {
         document.querySelector('#header .avatar').addEventListener('click', () => {
           toggleProfileMenu(userId, state);
         });
+
+        document.querySelector('.container .job-title').textContent = data.job_title;
+        document.querySelector('.container .username').textContent = data.username;
 
         let ul = document.querySelector('.container ul');
 
@@ -626,6 +646,10 @@ function loadChat(jobSeekerId, employerId, jobPostId) {
         await loadTemplate("chat-e3ced1041616beb104ddc20e5db64dac.html", document.getElementById('app'));
         await loadTemplate("chat-footer-8cb9441ae82b8cbeb26c69a888275874.html", document.getElementById('footer'));
 
+        updateFixedElementSizeAndPosition();
+
+        window.onresize = updateFixedElementSizeAndPosition;
+
         document.querySelector('.chat-title h1').textContent = data.job_title;
 
         const chatMessages = document.querySelector('#chat-zone .chat-messages');
@@ -639,7 +663,7 @@ function loadChat(jobSeekerId, employerId, jobPostId) {
           console.log("User ID:", userId);
         }
 
-        data.chat.messages.forEach(message => {
+        data.chat.messages.slice().reverse().forEach(message => {
           let messageItemDiv = document.createElement('div');
 
           if (message.sender_id === userId) {
@@ -695,7 +719,7 @@ function loadChat(jobSeekerId, employerId, jobPostId) {
 
           messageItemDiv.appendChild(messageBlocDiv);
 
-          chatMessages.appendChild(messageItemDiv);
+          chatMessages.insertBefore(messageItemDiv, chatMessages.firstChild);
 
           /*
           id: str
@@ -777,7 +801,7 @@ function registerSocketIOEventListeners() {
 
     messageItemDiv.appendChild(messageBlocDiv);
 
-    chatMessages.appendChild(messageItemDiv);
+    chatMessages.insertBefore(messageItemDiv, chatMessages.firstChild);
 
     socket.emit('message_received', { message: data.message, chat_id: data.chat_id, job_post_id: data.job_post_id });
   });
