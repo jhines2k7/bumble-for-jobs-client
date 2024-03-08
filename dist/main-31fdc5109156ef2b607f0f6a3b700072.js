@@ -85,7 +85,14 @@ function toggleProfileMenu(userId, state) {
 
     const settingsBtn = document.getElementById('settings-btn');
     settingsBtn.addEventListener('click', () => {
-      router.navigate(`/settings/${userId}/${state}`);
+      // router.navigate(`/settings/${userId}/${state}`);
+      var overlay = document.body.lastElementChild;
+      overlay.remove();
+  
+      let profileMenu = document.getElementById('profile-menu');
+      profileMenu.classList.toggle('move-right');
+      
+      logout();
     });
 
     const profileBtn = document.getElementById('profile-btn');
@@ -378,7 +385,7 @@ function getCompatibilityAnalysis(id) {
     })
     .then(data => {
       (async () => {
-        await loadTemplate("compatibility-analysis-1e6081fd66808c3618cb1c52c508f49a.html", document.getElementById('app'));
+        await loadTemplate("compatibility-analysis-c0f550e56db8ccae4a329d42e06fe73c.html", document.getElementById('app'));
         await loadTemplate("footer-11c9a829e91bc79349c29e61c42c5fb8.html", document.getElementById('footer'));
 
         await loadTemplate("header-eec68ed32b504a4e1b1ec348d14774e8.html", document.getElementById('header'));
@@ -398,6 +405,16 @@ function getCompatibilityAnalysis(id) {
           li.textContent = `${sentenceCasedKey}: ${data.compatibility_analysis[key]}`;
           ul.appendChild(li);
         }
+
+        const chatButton = document.querySelector('.user-interaction-options .round-button.chat');
+        chatButton.addEventListener('click', () => {
+          router.navigate(`/chat?job_seeker_id=${data.job_seeker_id}&employer_id=${data.employer_id}&job_post_id=${data.job_post_id}`);
+        });
+
+        const likeButton = document.querySelector('.user-interaction-options .round-button.like');
+        likeButton.addEventListener('click', () => {
+          router.navigate(`/you/${userId}/${state}?page=${parseInt(page) + 1}`);
+        });
       })();
     })
     .catch(error => {
@@ -464,8 +481,10 @@ function getJobPost(id) {
       (async () => {
         let decodedToken = parseJwt(localStorage.getItem('access_token'));
         let userId = null;
+        let state = null;
         if (decodedToken) {
           userId = decodedToken.user_id;
+          state = decodedToken.state;
         }
         await loadTemplate("job-post-68b405b145000f38dbd20b638b1c97aa.html", document.getElementById('app'));
         await loadTemplate("footer-11c9a829e91bc79349c29e61c42c5fb8.html", document.getElementById('footer'));
@@ -519,7 +538,7 @@ function getJobPost(id) {
 
         const chatButton = document.querySelector('.user-interaction-options .round-button.chat');
         chatButton.addEventListener('click', () => {
-          router.navigate(`/chat?job_seeker_id=${userId}&employer_id=${jobPost.employer_id}&job_posting_id=${jobPost.id}`);
+          router.navigate(`/chat?job_seeker_id=${userId}&employer_id=${jobPost.employer_id}&job_post_id=${jobPost.id}`);
         });
 
         const likeButton = document.querySelector('.user-interaction-options .round-button.like');
@@ -739,7 +758,7 @@ function registerSocketIOEventListeners() {
 
     let messageItemDiv = document.createElement('div');
 
-    messageItemDiv.classList.add('message-item', 'sender');
+    messageItemDiv.classList.add('message-item', 'receiver');
 
     let messageBlocDiv = document.createElement('div');
     messageBlocDiv.classList.add('message-bloc');
@@ -905,7 +924,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }, {
       before(done, match) {
         checkTokenExpiry();
-        loadChat(match.params.job_seeker_id, match.params.employer_id, match.params.job_posting_id);
+        loadChat(match.params.job_seeker_id, match.params.employer_id, match.params.job_post_id);
         done();
       }
     })

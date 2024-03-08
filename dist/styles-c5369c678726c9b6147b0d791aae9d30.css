@@ -237,22 +237,25 @@ body {
   font-weight: bold;
 }
 #chat-zone {
-  margin: 10px 0 0 0;
   position: fixed;
+  margin: 10px 0 0 0;
+  width: 440px;
   bottom: 140px;
-  overflow: auto;
+  overflow: scroll;
   -webkit-overflow-scrolling: touch;
-  padding: 0 0 0 0;
 }
 
 #chat-zone .chat-messages .message-item {
-  position: relative;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   justify-content: flex-end;
   padding: 0 16px 4px;
-margin-bottom: 20px;
+  margin-bottom: 20px;
+}
+
+.chat-messages .message-item {
+  position: relative;
 }
 
 #chat-zone .chat-messages .message-item.sender+.receiver, #chat-zone .chat-messages .message-item.receiver+.sender {
