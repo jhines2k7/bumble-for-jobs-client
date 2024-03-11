@@ -6,6 +6,7 @@ body {
 }
 #app {
   margin: 0 auto;
+  height: 100vh;
 }
 .container {
   width: 100%;
@@ -14,8 +15,8 @@ body {
   position: relative;
   background-color: #f0f0f0;
   box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.3), -5px -5px 10px rgba(255, 255, 255, 0.5);
-  padding: 20px;
-  height: 100vh;
+  padding: 0 60px 60px 60px;
+  height: 100%;
 }
 .title {
   font-size: 24px;
@@ -241,13 +242,12 @@ body {
 }
 
 #chat-zone .chat-messages {
-  padding: 300px 0 0 0;
   position: fixed;
-  top: -240px;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   display: flex;
   flex-direction: column-reverse;
+  padding: 0 0 55px 0;
 }
 
 #chat-zone .chat-messages .message-item {
@@ -767,4 +767,8 @@ input, button, select, textarea {
 .username {
   font-size: larger;
   font-weight: bold;
+}
+
+.analysis {
+  padding: 0 0 20px 0;
 }

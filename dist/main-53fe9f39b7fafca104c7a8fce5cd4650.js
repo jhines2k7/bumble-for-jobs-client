@@ -88,10 +88,10 @@ function toggleProfileMenu(userId, state) {
       // router.navigate(`/settings/${userId}/${state}`);
       var overlay = document.body.lastElementChild;
       overlay.remove();
-  
+
       let profileMenu = document.getElementById('profile-menu');
       profileMenu.classList.toggle('move-right');
-      
+
       logout();
     });
 
@@ -129,9 +129,13 @@ function uploadFile(endpoint, user) {
   })
     .then(response => {
       if (!response.ok) {
+        if (response.status === 401) {
+          router.navigate('/login');
+        }
+
         throw new Error('Network response was not ok ' + response.statusText);
       }
-      console.log('Response:', response.json());
+      return response.json(); // Return JSON data
     })
     .then(data => {
       console.log('Success:', data);
@@ -276,14 +280,23 @@ function handleFileUpload(endpoint, user) {
   })();
 }
 
-function getJobPostListing(employerId, state) {
+async function getJobPostListing(employerId, state) {
   fetch(`${domain}/job-post-listing`, {
     method: 'GET',
     headers: {
       'Authorization': `Bearer ${localStorage.getItem('access_token')}`
     }
   })
-    .then(res => res.json())
+    .then(response => {
+      if (!response.ok) {
+        if (response.status === 401) {
+          router.navigate('/login');
+        }
+
+        throw new Error('Network response was not ok ' + response.statusText);
+      }
+      return response.json(); // Return JSON data
+    })
     .then(data => {
       (async () => {
         await loadTemplate("job-post-listing-14424a816a55ce227896b1252af8d814.html", document.getElementById('app'));
@@ -317,14 +330,22 @@ function getJobPostListing(employerId, state) {
     });
 }
 
-function getJobPosts(userId, state, page) {
+async function getJobPosts(userId, state, page) {
   fetch(`${domain}/job-posts?page=${page}`, {
     method: 'GET',
     headers: {
       'Authorization': `Bearer ${localStorage.getItem('access_token')}`
     }
   })
-    .then(res => res.json())
+    .then(response => {
+      if (!response.ok) {
+        if (response.status === 401) {
+          router.navigate('/login');
+        }
+        throw new Error('Network response was not ok ' + response.statusText);
+      }
+      return response.json(); // Return JSON data
+    })
     .then(data => {
       (async () => {
         await loadTemplate("gallery-c19d9754e1f5b1e666792eb31d52e6ed.html", document.getElementById('app'));
@@ -373,21 +394,21 @@ function toSentenceCase(str) {
 function updateFixedElementSizeAndPosition() {
   const parent = document.querySelector('.container');
   const rect = parent.getBoundingClientRect(); // Get position & size of parent
-  
+
   const fixedElement = document.querySelector('#chat-zone .chat-messages');
-  
+
   if (fixedElement) {
     // Set size and position to match parent
     fixedElement.style.width = `${rect.width}px`;
-    fixedElement.style.height = `${rect.height}px`;
-    // fixedElement.style.top = `${rect.top - 280}px`;
+    fixedElement.style.height = `${rect.height - 240}px`;
+    fixedElement.style.top = '60px';
     fixedElement.style.left = `${rect.left}px`;
   } else {
     console.error('Fixed element not found');
   }
 }
 
-function getCompatibilityAnalysis(id) {
+async function getCompatibilityAnalysis(id) {
   fetch(`${domain}/compatibility-analysis/${id}`, {
     method: 'GET',
     headers: {
@@ -396,13 +417,17 @@ function getCompatibilityAnalysis(id) {
   })
     .then(response => {
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        if (response.status === 401) {
+          router.navigate('/login');
+        }
+
+        throw new Error('Network response was not ok ' + response.statusText);
       }
-      return response.json();
+      return response.json(); // Return JSON data
     })
     .then(data => {
       (async () => {
-        await loadTemplate("compatibility-analysis-716957fdcb7d3eb5377e4559ea005f87.html", document.getElementById('app'));
+        await loadTemplate("compatibility-analysis-21a5f3e91e4ef25d25f77f965e08cb9c.html", document.getElementById('app'));
         await loadTemplate("footer-11c9a829e91bc79349c29e61c42c5fb8.html", document.getElementById('footer'));
 
         await loadTemplate("header-eec68ed32b504a4e1b1ec348d14774e8.html", document.getElementById('header'));
@@ -426,6 +451,10 @@ function getCompatibilityAnalysis(id) {
           ul.appendChild(li);
         }
 
+        // select the p tag after the h2 tag
+        const p = document.querySelector('.full-analysis');
+        p.textContent = data.full_analysis;
+
         const chatButton = document.querySelector('.user-interaction-options .round-button.chat');
         chatButton.addEventListener('click', () => {
           router.navigate(`/chat?job_seeker_id=${data.job_seeker_id}&employer_id=${data.employer_id}&job_post_id=${data.job_post_id}`);
@@ -442,14 +471,23 @@ function getCompatibilityAnalysis(id) {
     });
 }
 
-function getJobSeekers(jobPostId) {
+async function getJobSeekers(jobPostId) {
   fetch(`${domain}/job-seekers/${jobPostId}`, {
     method: 'GET',
     headers: {
       'Authorization': `Bearer ${localStorage.getItem('access_token')}`
     }
   })
-    .then(res => res.json())
+    .then(response => {
+      if (!response.ok) {
+        if (response.status === 401) {
+          router.navigate('/login');
+        }
+
+        throw new Error('Network response was not ok ' + response.statusText);
+      }
+      return response.json();
+    })
     .then(data => {
       (async () => {
 
@@ -484,7 +522,7 @@ function getJobSeekers(jobPostId) {
     })
 }
 
-function getJobPost(id) {
+async function getJobPost(id) {
   fetch(`${domain}/job-posts?compatibility-analysis-id=${id}`, {
     method: 'GET',
     headers: {
@@ -493,7 +531,11 @@ function getJobPost(id) {
   })
     .then(response => {
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        if (response.status === 401) {
+          router.navigate('/login');
+        }
+
+        throw new Error('Network response was not ok ' + response.statusText);
       }
       return response.json();
     })
@@ -572,7 +614,7 @@ function getJobPost(id) {
     });
 }
 
-function checkTokenExpiry() {
+async function checkTokenExpiry() {
   const token = localStorage.getItem('access_token');
   if (token) {
     console.log("Token:", token);
@@ -580,7 +622,9 @@ function checkTokenExpiry() {
     const expiry = payload.exp;
     const now = Date.now() / 1000; // Convert to seconds
     if (now > expiry) {
-      logout(); // Token has expired, log the user out
+      console.log("Token has expired");
+      // try to refresh the token
+      await refreshToken();
     }
   } else {
     logout(); // No token found, log the user out
@@ -620,13 +664,29 @@ function appendIdenticon(hashValue, size, targetElement) {
 }
 
 function logout() {
-  // Remove the token from localStorage or sessionStorage
-  localStorage.removeItem('access_token');
-  // Redirect the user to the login page or home page
-  router.navigate('/login');
+  fetch(`${domain}/logout`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+    }
+  }).then(response => {
+    if (!response.ok) {
+      // Remove the token from localStorage  
+      localStorage.removeItem('access_token');
+      // Redirect the user to the login page or home page
+      router.navigate('/login');
+
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    // Remove the token from localStorage  
+    localStorage.removeItem('access_token');
+    // Redirect the user to the login page or home page
+    router.navigate('/login');
+  });
 }
 
-function loadChat(jobSeekerId, employerId, jobPostId) {
+async function loadChat(jobSeekerId, employerId, jobPostId) {
   document.getElementById('header').innerHTML = '';
 
   fetch(`${domain}/chat?job_seeker_id=${jobSeekerId}&employer_id=${employerId}&job_post_id=${jobPostId}`, {
@@ -637,6 +697,10 @@ function loadChat(jobSeekerId, employerId, jobPostId) {
   })
     .then(response => {
       if (!response.ok) {
+        if (response.status === 401) {
+          router.navigate('/login');
+        }
+
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       return response.json();
@@ -721,18 +785,6 @@ function loadChat(jobSeekerId, employerId, jobPostId) {
 
           chatMessages.insertBefore(messageItemDiv, chatMessages.firstChild);
 
-          /*
-          id: str
-          content: str
-          sender_id: str
-          receiver_id: str
-          date: datetime
-          read: bool
-          read_time: Optional[datetime] = None
-          message_type: str
-          status: str
-          */
-
           socket.emit('message_sent', {
             chat_id: data.chat.id,
             job_post_id: jobPostId,
@@ -788,7 +840,7 @@ function registerSocketIOEventListeners() {
     messageBlocDiv.classList.add('message-bloc');
 
     let messageDiv = document.createElement('div');
-    messageDiv.classList.add('message'); 
+    messageDiv.classList.add('message');
     messageDiv.textContent = data.message.content;
 
     let dateTimeDiv = document.createElement('div');
@@ -811,7 +863,38 @@ function registerSocketIOEventListeners() {
   });
 }
 
+async function refreshToken() {
+  fetch(`${domain}/token/refresh`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${localStorage.getItem('refresh_token')}`
+    }
+  })
+    .then(response => {
+      if (!response.ok) {
+        if (response.status === 401) {
+          router.navigate('/login');
+        }
+
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return response.json();
+    })
+    .then(data => {
+      if (data.access_token) {
+        // localStorage.removeItem('access_token');
+        localStorage.setItem('access_token', data.access_token);
+      }
+    })
+    .catch(error => {
+      // Handle any errors
+      console.error('Error:', error);
+    });
+}
+
 document.addEventListener('DOMContentLoaded', () => {
+  // setInterval(refreshToken, 30 * 1000);
+
   registerSocketIOEventListeners();
 
   router
@@ -850,9 +933,10 @@ document.addEventListener('DOMContentLoaded', () => {
             return response.json();
           })
           .then(data => {
-            if (data.access_token) {
+            if (data.access_token && data.refresh_token) {
               // Store the JWT in localStorage or session storage
               localStorage.setItem('access_token', data.access_token);
+              localStorage.setItem('refresh_token', data.refresh_token);
 
               // get claims from the access token
               const decodedToken = parseJwt(data.access_token);
@@ -864,6 +948,8 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
               alert('Login failed');
             }
+
+            // setInterval(refreshToken, 30 * 1000);
           })
           .catch(error => console.error('Error:', error));
       });
@@ -881,38 +967,43 @@ document.addEventListener('DOMContentLoaded', () => {
       console.log(`Match value on for you route: ${JSON.stringify(match)}`);
     }, {
       before(done, match) {
-        checkTokenExpiry();
-        // get claims from the token
-        const token = localStorage.getItem('access_token');
-        const decodedToken = parseJwt(token);
-        console.log("Decoded token:", decodedToken);
-        if (decodedToken) {
-          if (decodedToken.roles.includes('EMPLOYER')) {
-            getJobPostListing(match.data.userId, match.data.state);
-            // getJobSeekers(match.data.userId, match.data.state);
-          } else {
-            getJobPosts(match.data.userId, match.data.state, match.params.page);
+        (async () => {
+          await checkTokenExpiry();
+          // get claims from the token
+          const token = localStorage.getItem('access_token');
+          const decodedToken = parseJwt(token);
+          console.log("Decoded token:", decodedToken);
+          if (decodedToken) {
+            if (decodedToken.roles.includes('EMPLOYER')) {
+              await getJobPostListing(match.data.userId, match.data.state);
+              // getJobSeekers(match.data.userId, match.data.state);
+            } else {
+              await getJobPosts(match.data.userId, match.data.state, match.params.page);
+            }
           }
-        }
-        done();
+          done();
+        })();
       }
     })
     .on("/job-seekers/:jobPostId", (match) => {
       console.log(`Match value on job seekers route: ${JSON.stringify(match)}`);
     }, {
       before(done, match) {
-        checkTokenExpiry();
-        getJobSeekers(match.data.jobPostId);
-        done();
+        (async () => {
+          await checkTokenExpiry();
+          await getJobSeekers(match.data.jobPostId);
+          done();
+        })();
       }
     })
     .on("/job-post/:id", (match) => {
       console.log(`Match value on you route: ${JSON.stringify(match)}`);
     }, {
       before(done, match) {
-        checkTokenExpiry();
         (async () => {
-          getJobPost(match.data.id);
+          await checkTokenExpiry();
+
+          await getJobPost(match.data.id);
 
           done();
         })();
@@ -921,9 +1012,9 @@ document.addEventListener('DOMContentLoaded', () => {
     .on("/compatibility-analysis/:analysisId", (match) => {
     }, {
       before(done, match) {
-        checkTokenExpiry();
         (async () => {
-          getCompatibilityAnalysis(match.data.analysisId);
+          await checkTokenExpiry();
+          await getCompatibilityAnalysis(match.data.analysisId);
           done();
         })();
       }
@@ -932,8 +1023,8 @@ document.addEventListener('DOMContentLoaded', () => {
       console.log(`Match value on chats route: ${JSON.stringify(match)}`);
     }, {
       before(done, match) {
-        checkTokenExpiry();
         (async () => {
+          await checkTokenExpiry();
           await loadTemplate("chats-7aaaad2c6390698810e0a82353682c12.html", document.getElementById('app'));
           await loadTemplate("footer-11c9a829e91bc79349c29e61c42c5fb8.html", document.getElementById('footer'));
 
@@ -947,17 +1038,19 @@ document.addEventListener('DOMContentLoaded', () => {
       console.log(`Match value on chat route: ${JSON.stringify(match)}`);
     }, {
       before(done, match) {
-        checkTokenExpiry();
-        loadChat(match.params.job_seeker_id, match.params.employer_id, match.params.job_post_id);
-        done();
+        (async () => {
+          await checkTokenExpiry();
+          await loadChat(match.params.job_seeker_id, match.params.employer_id, match.params.job_post_id);
+          done();
+        })();
       }
     })
     .on("/upload-resume", (match) => {
       console.log(`Match value on upload resume route: ${JSON.stringify(match)}`);
     }, {
       before(done, match) {
-        checkTokenExpiry();
         (async () => {
+          await checkTokenExpiry();
           await loadTemplate("file-upload-ab22345fd6d9b7bda5962481f1af72af.html", document.getElementById('app'));
 
           // remove all markup from the footer
@@ -973,21 +1066,23 @@ document.addEventListener('DOMContentLoaded', () => {
       console.log(`Match value on profile route: ${JSON.stringify(match)}`);
     }, {
       before(done, match) {
-        checkTokenExpiry();
-        const user = {
-          id: match.data.userId,
-          state: match.data.state,
-        };
-        handleFileUpload('upload/resume', user);
-        done();
+        (async () => {
+          await checkTokenExpiry();
+          const user = {
+            id: match.data.userId,
+            state: match.data.state,
+          };
+          handleFileUpload('upload/resume', user);
+          done();
+        })();
       }
     })
     .on("/settings/:userId", (match) => {
       console.log(`Match value on settings route: ${JSON.stringify(match)}`);
     }, {
       before(done, match) {
-        checkTokenExpiry();
         (async () => {
+          await checkTokenExpiry();
           await loadTemplate("settings-d41d8cd98f00b204e9800998ecf8427e.html", document.getElementById('app'));
 
           done();
@@ -998,8 +1093,8 @@ document.addEventListener('DOMContentLoaded', () => {
       console.log(`Match value on preferences route: ${JSON.stringify(match)}`);
     }, {
       before(done, match) {
-        checkTokenExpiry();
         (async () => {
+          await checkTokenExpiry();
           await loadTemplate("preferences-d41d8cd98f00b204e9800998ecf8427e.html", document.getElementById('app'));
 
           done();
