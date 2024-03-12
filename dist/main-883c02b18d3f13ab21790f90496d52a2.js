@@ -878,14 +878,13 @@ async function refreshToken() {
         router.navigate('/login');
       }
 
-      console.error(`HTTP error! status: ${response.status}`);
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
 
     const data = await response.json();
 
     return data;
   } catch(error) {
-    // Handle any errors
     console.error('Error refreshing token:', error);
 
     throw error;
