@@ -622,7 +622,7 @@ function isTokenExpired() {
     const now = Date.now() / 1000; // Convert to seconds
     if (now > expiry) {
       console.log("Token has expired");
-      
+
       return true;
     }
   } else {
@@ -862,10 +862,10 @@ function registerSocketIOEventListeners() {
   });
 }
 
-async function refreshToken() {
+async function refreshAccessToken() {
   try {
-    console.log('Refreshing token...')
-    
+    console.log('Refreshing access token...')
+
     const response = await fetch(`${domain}/token/refresh`, {
       method: 'POST',
       headers: {
@@ -884,7 +884,7 @@ async function refreshToken() {
     const data = await response.json();
 
     return data;
-  } catch(error) {
+  } catch (error) {
     console.error('Error refreshing token:', error);
 
     throw error;
@@ -892,269 +892,302 @@ async function refreshToken() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  // setInterval(refreshToken, 30 * 1000);
-
   registerSocketIOEventListeners();
 
   router
     .on(() => {
       console.log('Matched the default route');
-      isTokenExpired();
-      // get claims from the token
-      const token = localStorage.getItem('access_token');
+      if (isTokenExpired()) {
+        refreshAccessToken().then(data => {
+          localStorage.setItem('access_token', data.access_token);
 
-      const decodedToken = parseJwt(token);
-      if (decodedToken) {
-        router.navigate(`/foryou/${decodedToken.user_id}/${decodedToken.state}?page=1`);
+          const token = parseJwt(data.access_token);
+
+          router.navigate(`/foryou/${token.user_id}/${token.state}?page=1`);
+        }).catch(error => {
+          console.error('Error refreshing token:', error);
+        });
+      } else {
+        const token = localStorage.getItem('access_token');
+        router.navigate(`/foryou/${token.user_id}/${token.state}?page=1`);
       }
     })
     .on("/login", (match) => {
       console.log(`Match value on login route: ${JSON.stringify(match)}`);
+
       let loginForm = document.querySelector('.form .login-form');
 
-      loginForm.addEventListener('submit', function (e) {
+      loginForm.addEventListener('submit', async function (e) {
         e.preventDefault();
 
         const email = document.querySelector('.login-form input[type="text"]').value;
         const password = document.querySelector('.login-form input[type="password"]').value;
 
-        fetch(`${domain}/login`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ email: email, password: password }),
-        })
-          .then(response => {
-            if (!response.ok) {
-              document.querySelector('.login .form p.message.error').textContent = 'Username or password is incorrect';
+        try {
+          const response = await fetch(`${domain}/login`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ email: email, password: password }),
+          });
 
-              throw new Error('Network response was not ok ' + response.statusText);
-            }
+          if (!response.ok) {
+            document.querySelector('.login .form p.message.error').textContent = 'Username or password is incorrect';
+            throw new Error('Network response was not ok ' + response.statusText);
+          }
 
-            return response.json();
-          })
-          .then(data => {
-            if (data.access_token && data.refresh_token) {
-              // Store the JWT in localStorage or session storage
-              localStorage.setItem('access_token', data.access_token);
-              localStorage.setItem('refresh_token', data.refresh_token);
+          const data = await response.json();
 
-              // log expiration date
-              const token = localStorage.getItem('access_token');
-              const payload = JSON.parse(atob(token.split('.')[1]));
-              const expiry = payload.exp;
-              const now = Date.now() / 1000; // Convert to seconds
-              console.log('Token expires in:', expiry - now, 'seconds');
+          if (data.access_token && data.refresh_token) {
+            // Store the JWT in localStorage or session storage
+            localStorage.setItem('access_token', data.access_token);
+            localStorage.setItem('refresh_token', data.refresh_token);
 
-              // get claims from the access token
-              const decodedToken = parseJwt(data.access_token);
-              
-              if (decodedToken) {
-                router.navigate(`/foryou/${decodedToken.user_id}/${decodedToken.state}?page=1`);
-              }
-
-            } else {
-              alert('Login failed');
-            }
-
-            // setInterval(refreshToken, 30 * 1000);
-          })
-          .catch(error => console.error('Error:', error));
+            const decodedToken = parseJwt(data.access_token);
+            router.navigate(`/foryou/${decodedToken.user_id}/${decodedToken.state}?page=1`);
+          } else {
+            throw new Error('Access token or refresh token not found in response');
+          }
+        } catch (error) {
+          console.error('Error:', error);
+        }
       });
     }, {
       before(done) {
-        (async () => {
-          document.getElementById('footer').innerHTML = '';
-          document.getElementById('header').innerHTML = '';
-          await loadTemplate("login-5810d77949c583cca8d80562e79410a6.html", document.getElementById('app'));
-          done();
-        })();
+        document.getElementById('footer').innerHTML = '';
+        document.getElementById('header').innerHTML = '';
+        loadTemplate("login-5810d77949c583cca8d80562e79410a6.html", document.getElementById('app'));
+        done();
       }
     })
     .on("/foryou/:userId/:state", (match) => {
       console.log(`Match value on for you route: ${JSON.stringify(match)}`);
     }, {
       before(done, match) {
-        (async () => {
-          if(isTokenExpired()) {
-            refreshToken().then(data => {
-              console.log('Refresh token data:', data);
-              localStorage.setItem('access_token', data.access_token);
+        if (isTokenExpired()) {
+          refreshAccessToken().then(data => {
+            localStorage.setItem('access_token', data.access_token);
 
-              const token = data.access_token;
-              
-              const payload = JSON.parse(atob(token.split('.')[1]));
-              const expiry = payload.exp;
-              const now = Date.now() / 1000; // Convert to seconds
-              console.log('Token expires in:', expiry - now, 'seconds');
-              
-              const decodedToken = parseJwt(token);
-              
-              if (decodedToken) {
-                // get claims from the token
-                if (decodedToken.roles.includes('EMPLOYER')) {
-                  getJobPostListing(match.data.userId, match.data.state);
-                  // getJobSeekers(match.data.userId, match.data.state);
-                } else {
-                  getJobPosts(match.data.userId, match.data.state, match.params.page);
-                }
-              }
-            });
-          } else {
-            const token = localStorage.getItem('access_token');
-            
-            const payload = JSON.parse(atob(token.split('.')[1]));
-            const expiry = payload.exp;
-            const now = Date.now() / 1000; // Convert to seconds
-            console.log('Token expires in:', expiry - now, 'seconds');
-            
-            const decodedToken = parseJwt(token);
-            
-            if (decodedToken) {
-              // get claims from the token
-              if (decodedToken.roles.includes('EMPLOYER')) {
-                await getJobPostListing(match.data.userId, match.data.state);
-                // getJobSeekers(match.data.userId, match.data.state);
-              } else {
-                await getJobPosts(match.data.userId, match.data.state, match.params.page);
-              }
+            const token = parseJwt(data.access_token);
+
+            if (token.roles.includes('EMPLOYER')) {
+              getJobPostListing(match.data.userId, match.data.state);
+            } else {
+              getJobPosts(match.data.userId, match.data.state, match.params.page);
             }
-          }
+          });
+        } else {
+          // log expiration date
+          const token = parseJwt(localStorage.getItem('access_token'));
+          console.log('Token:', token);
 
-          done();
-        })();
+          const expiry = token.exp;
+          const now = Date.now() / 1000; // Convert to seconds
+          console.log('Token expires in:', expiry - now, 'seconds');
+
+          if (token.roles.includes('EMPLOYER')) {
+            getJobPostListing(match.data.userId, match.data.state);
+          } else {
+            getJobPosts(match.data.userId, match.data.state, match.params.page);
+          }
+        }
+
+        done();
       }
     })
     .on("/job-seekers/:jobPostId", (match) => {
       console.log(`Match value on job seekers route: ${JSON.stringify(match)}`);
     }, {
       before(done, match) {
-        (async () => {
-          await isTokenExpired();
-          await getJobSeekers(match.data.jobPostId);
-          done();
-        })();
+        if (isTokenExpired()) {
+          refreshAccessToken().then(data => {
+            localStorage.setItem('access_token', data.access_token);
+
+            getJobSeekers(match.data.jobPostId);
+          });
+        } else {
+          getJobSeekers(match.data.jobPostId);
+        }
+
+        done();
       }
     })
     .on("/job-post/:id", (match) => {
       console.log(`Match value on you route: ${JSON.stringify(match)}`);
     }, {
       before(done, match) {
-        (async () => {
-          await isTokenExpired();
+        if (isTokenExpired()) {
+          refreshAccessToken().then(data => {
+            localStorage.setItem('access_token', data.access_token);
 
-          // log expiration date
-          const token = localStorage.getItem('access_token');
-          const payload = JSON.parse(atob(token.split('.')[1]));
-          const expiry = payload.exp;
-          const now = Date.now() / 1000; // Convert to seconds
-          console.log('Token expires in:', expiry - now, 'seconds');
+            getJobPost(match.data.id);
+          });
+        } else {
+          getJobPost(match.data.id);
+        }
 
-          await getJobPost(match.data.id);
-
-          done();
-        })();
+        done();
       }
     })
     .on("/compatibility-analysis/:analysisId", (match) => {
     }, {
       before(done, match) {
-        (async () => {
-          await isTokenExpired();
+        if (isTokenExpired()) {
+          refreshAccessToken().then(data => {
+            localStorage.setItem('access_token', data.access_token);
 
-          // log expiration date
-          const token = localStorage.getItem('access_token');
-          const payload = JSON.parse(atob(token.split('.')[1]));
-          const expiry = payload.exp;
-          const now = Date.now() / 1000; // Convert to seconds
-          console.log('Token expires in:', expiry - now, 'seconds');
+            getCompatibilityAnalysis(match.data.analysisId);
+          });
+        } else {
+          getCompatibilityAnalysis(match.data.analysisId);
+        }
 
-          await getCompatibilityAnalysis(match.data.analysisId);
-          done();
-        })();
+        done();
       }
     })
     .on("/chats/:userId", (match) => {
       console.log(`Match value on chats route: ${JSON.stringify(match)}`);
     }, {
       before(done, match) {
-        (async () => {
-          await isTokenExpired();
-          await loadTemplate("chats-7aaaad2c6390698810e0a82353682c12.html", document.getElementById('app'));
-          await loadTemplate("footer-11c9a829e91bc79349c29e61c42c5fb8.html", document.getElementById('footer'));
+        if (isTokenExpired()) {
+          refreshAccessToken().then(data => {
+            localStorage.setItem('access_token', data.access_token);
 
-          await loadTemplate("header-eec68ed32b504a4e1b1ec348d14774e8.html", document.getElementById('header'));
+            loadTemplate("chats-7aaaad2c6390698810e0a82353682c12.html", document.getElementById('app'));
+            loadTemplate("footer-11c9a829e91bc79349c29e61c42c5fb8.html", document.getElementById('footer'));
+
+            loadTemplate("header-eec68ed32b504a4e1b1ec348d14774e8.html", document.getElementById('header'));
+            document.querySelector('#header h1').textContent = 'Chats';
+          });
+        } else {
+          loadTemplate("chats-7aaaad2c6390698810e0a82353682c12.html", document.getElementById('app'));
+          loadTemplate("footer-11c9a829e91bc79349c29e61c42c5fb8.html", document.getElementById('footer'));
+
+          loadTemplate("header-eec68ed32b504a4e1b1ec348d14774e8.html", document.getElementById('header'));
           document.querySelector('#header h1').textContent = 'Chats';
-          done();
-        })();
+        }
+
+        done();
       }
     })
     .on("/chat", (match) => {
       console.log(`Match value on chat route: ${JSON.stringify(match)}`);
     }, {
       before(done, match) {
-        (async () => {
-          await isTokenExpired();
-          await loadChat(match.params.job_seeker_id, match.params.employer_id, match.params.job_post_id);
-          done();
-        })();
+        if (isTokenExpired()) {
+          refreshAccessToken().then(data => {
+            localStorage.setItem('access_token', data.access_token);
+
+            loadChat(match.params.job_seeker_id, match.params.employer_id, match.params.job_post_id);
+          });
+        } else {
+          loadChat(match.params.job_seeker_id, match.params.employer_id, match.params.job_post_id);
+        }
+        done();
       }
     })
-    .on("/upload-resume", (match) => {
-      console.log(`Match value on upload resume route: ${JSON.stringify(match)}`);
+    .on("/upload/:userId/:state", (match) => {
+      console.log(`Match value on upload route: ${JSON.stringify(match)}`);
     }, {
       before(done, match) {
-        (async () => {
-          await isTokenExpired();
-          await loadTemplate("file-upload-ab22345fd6d9b7bda5962481f1af72af.html", document.getElementById('app'));
+        const user = {
+          id: match.data.userId,
+          state: match.data.state,
+        };
 
-          // remove all markup from the footer
-          document.getElementById('footer').innerHTML = '';
+        if (isTokenExpired()) {
+          refreshAccessToken().then(data => {
+            localStorage.setItem('access_token', data.access_token);
 
-          handleFileUpload('upload/job-description');
+            const token = parseJwt(data.access_token);
 
-          done();
-        })();
+            if (token.roles.includes('EMPLOYER')) {
+              handleFileUpload('upload/job-description', user);
+            } else {
+              handleFileUpload('upload/resume', user);
+            }
+          });
+        } else {
+          const token = localStorage.getItem('access_token');
+
+          if (token.roles.includes('EMPLOYER')) {
+            handleFileUpload('upload/job-description', user);
+          } else {
+            handleFileUpload('upload/resume', user);
+          }
+        }
+
+        done();
       }
     })
     .on("/profile/:userId/:state", (match) => {
       console.log(`Match value on profile route: ${JSON.stringify(match)}`);
     }, {
       before(done, match) {
-        (async () => {
-          await isTokenExpired();
-          const user = {
-            id: match.data.userId,
-            state: match.data.state,
-          };
-          handleFileUpload('upload/resume', user);
-          done();
-        })();
+        if (isTokenExpired()) {
+          refreshAccessToken().then(data => {
+            localStorage.setItem('access_token', data.access_token);
+
+            loadTemplate("profile-448518c07b2836cf2706151c20b876d4.html", document.getElementById('app'));
+            loadTemplate("footer-11c9a829e91bc79349c29e61c42c5fb8.html", document.getElementById('footer'));
+
+            loadTemplate("header-eec68ed32b504a4e1b1ec348d14774e8.html", document.getElementById('header'));
+            document.querySelector('#header h1').textContent = 'Profile';
+
+            document.querySelector('#header .avatar').addEventListener('click', () => {
+              toggleProfileMenu(match.data.userId, match.data.state);
+            });
+          });
+        } else {
+          loadTemplate("profile-448518c07b2836cf2706151c20b876d4.html", document.getElementById('app'));
+          loadTemplate("footer-11c9a829e91bc79349c29e61c42c5fb8.html", document.getElementById('footer'));
+
+          loadTemplate("header-eec68ed32b504a4e1b1ec348d14774e8.html", document.getElementById('header'));
+          document.querySelector('#header h1').textContent = 'Profile';
+
+          document.querySelector('#header .avatar').addEventListener('click', () => {
+            toggleProfileMenu(match.data.userId, match.data.state);
+          });
+        }
+        const user = {
+          id: match.data.userId,
+          state: match.data.state,
+        };
+        handleFileUpload('upload/resume', user);
+        done();
       }
     })
     .on("/settings/:userId", (match) => {
       console.log(`Match value on settings route: ${JSON.stringify(match)}`);
     }, {
       before(done, match) {
-        (async () => {
-          await isTokenExpired();
-          await loadTemplate("settings-d41d8cd98f00b204e9800998ecf8427e.html", document.getElementById('app'));
+        if(isTokenExpired()) {
+          refreshAccessToken().then(data => {
+            localStorage.setItem('access_token', data.access_token);
+            loadTemplate("settings-d41d8cd98f00b204e9800998ecf8427e.html", document.getElementById('app'));
+          });
+        } else {
+          loadTemplate("settings-d41d8cd98f00b204e9800998ecf8427e.html", document.getElementById('app'));
+        }
 
-          done();
-        })();
+        done();
       }
     })
     .on("/preferences/:userId", (match) => {
       console.log(`Match value on preferences route: ${JSON.stringify(match)}`);
     }, {
       before(done, match) {
-        (async () => {
-          await isTokenExpired();
-          await loadTemplate("preferences-d41d8cd98f00b204e9800998ecf8427e.html", document.getElementById('app'));
+        if(isTokenExpired()) {
+          refreshAccessToken().then(data => {
+            localStorage.setItem('access_token', data.access_token);
+            loadTemplate("preferences-d41d8cd98f00b204e9800998ecf8427e.html", document.getElementById('app'));
+          });
+        } else {
+          loadTemplate("preferences-d41d8cd98f00b204e9800998ecf8427e.html", document.getElementById('app'));
+        }
 
-          done();
-        })();
+        done();
       }
     })
     .resolve();
