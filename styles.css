@@ -5,18 +5,15 @@ body {
   background: white;
 }
 #app {
-  margin: 0 auto;
   height: 100vh;
 }
 .container {
+  margin: 0 auto;
   width: 100%;
   max-width: 440px;
-  margin: 0 auto;
-  position: relative;
   background-color: #f0f0f0;
   box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.3), -5px -5px 10px rgba(255, 255, 255, 0.5);
-  padding: 0 20px 20px 20px;
-  height: 100%;
+  padding: 0 20px 60px 20px;
 }
 .title {
   padding: 20px 0 0 0;
@@ -239,16 +236,18 @@ body {
   font-weight: bold;
 }
 #chat-zone {
-  margin: 10px 0 0 0;
+  position: relative;
+  margin: 10px auto 0 auto;
+  max-width: 440px;
 }
 
 #chat-zone .chat-messages {
-  position: fixed;
+  background-color: #f0f0f0;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   display: flex;
   flex-direction: column-reverse;
-  padding: 0 0 55px 0;
+  padding: 0 0 140px 0;
 }
 
 #chat-zone .chat-messages .message-item {

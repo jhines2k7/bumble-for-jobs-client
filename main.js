@@ -281,103 +281,98 @@ function handleFileUpload(endpoint, user) {
 }
 
 async function getJobPostListing(employerId, state) {
-  fetch(`${domain}/job-post-listing`, {
+  const response = await fetch(`${domain}/job-post-listing`, {
     method: 'GET',
     headers: {
       'Authorization': `Bearer ${localStorage.getItem('access_token')}`
     }
-  })
-    .then(response => {
-      if (!response.ok) {
-        if (response.status === 401) {
-          router.navigate('/login');
-        }
+  });
 
-        throw new Error('Network response was not ok ' + response.statusText);
-      }
-      return response.json(); // Return JSON data
-    })
-    .then(data => {
-      (async () => {
-        await loadTemplate("job-post-listing.html", document.getElementById('app'));
-        await loadTemplate("footer.html", document.getElementById('footer'));
+  if (!response.ok) {
+    if (response.status === 401) {
+      router.navigate('/login');
+    }
 
-        await loadTemplate("header.html", document.getElementById('header'));
-        document.querySelector('#header h1').textContent = 'Job Posts';
+    throw new Error('Network response was not ok ' + response.statusText);
+  }
 
-        document.querySelector('#header .avatar').addEventListener('click', () => {
-          toggleProfileMenu(employerId, state);
-        });
+  const data = await response.json();
 
-        const cardTemplate = document.querySelector("[data-job-post-card-template]")
-        const cardContainer = document.querySelector("[data-job-post-card-container]")
-        console.log('job listing data: ' + data);
-        data.map(post => {
-          const card = cardTemplate.content.cloneNode(true).children[0]
-          card.addEventListener('click', () => {
-            router.navigate(`/job-seekers/${post.id}`);
-          });
+  loadTemplate("job-post-listing.html", document.getElementById('app'));
+  loadTemplate("footer.html", document.getElementById('footer'));
 
-          const jobTitle = card.querySelector("[data-title]");
-          const location = card.querySelector("[data-location]");
-          const count = card.querySelector("[data-count]");
-          jobTitle.textContent = post.title;
-          location.textContent = post.location;
-          count.textContent = post.count;
-          cardContainer.append(card);
-        })
-      })();
+  await loadTemplate("header.html", document.getElementById('header'));
+  document.querySelector('#header h1').textContent = 'Job Posts';
+
+  document.querySelector('#header .avatar').addEventListener('click', () => {
+    toggleProfileMenu(employerId, state);
+  });
+
+  const cardTemplate = document.querySelector("[data-job-post-card-template]")
+  const cardContainer = document.querySelector("[data-job-post-card-container]")
+  console.log('job listing data: ' + data);
+  data.map(post => {
+    const card = cardTemplate.content.cloneNode(true).children[0]
+    card.addEventListener('click', () => {
+      router.navigate(`/job-seekers/${post.id}`);
     });
+
+    const jobTitle = card.querySelector("[data-title]");
+    const location = card.querySelector("[data-location]");
+    const count = card.querySelector("[data-count]");
+    jobTitle.textContent = post.title;
+    location.textContent = post.location;
+    count.textContent = post.count;
+    cardContainer.append(card);
+  })
 }
 
 async function getJobPosts(userId, state, page) {
-  fetch(`${domain}/job-posts?page=${page}`, {
+  const response = await fetch(`${domain}/job-posts?page=${page}`, {
     method: 'GET',
     headers: {
       'Authorization': `Bearer ${localStorage.getItem('access_token')}`
     }
+  });
+
+  if (!response.ok) {
+    if (response.status === 401) {
+      router.navigate('/login');
+    }
+
+    throw new Error('Network response was not ok ' + response.statusText);
+  }
+
+  const data = await response.json();
+
+  await loadTemplate("gallery.html", document.getElementById('app'));
+  const userCardTemplate = document.querySelector("[data-contact-card-template]")
+  const userCardContainer = document.querySelector("[data-contact-cards-container]")
+
+  loadTemplate("footer.html", document.getElementById('footer'));
+
+  await loadTemplate("header.html", document.getElementById('header'));
+  document.querySelector('#header h1').textContent = 'For You';
+
+  document.querySelector('#header .avatar').addEventListener('click', () => {
+    toggleProfileMenu(userId, state);
+  });
+
+  data.job_posts.map(post => {
+    console.log(`job post: ${post}`);
+    const card = userCardTemplate.content.cloneNode(true).children[0]
+    card.addEventListener('click', () => {
+      router.navigate(`/job-post/${post.id}`);
+    });
+
+    const header = card.querySelector("[data-header]");
+    const jobTitle = card.querySelector("[data-title]");
+    const location = card.querySelector("[data-location]");
+    header.innerHTML = `<h1>${post.normalized_score}</h1><span>/100</span>`;
+    jobTitle.textContent = post.job_title;
+    location.textContent = post.location;
+    userCardContainer.append(card);
   })
-    .then(response => {
-      if (!response.ok) {
-        if (response.status === 401) {
-          router.navigate('/login');
-        }
-        throw new Error('Network response was not ok ' + response.statusText);
-      }
-      return response.json(); // Return JSON data
-    })
-    .then(data => {
-      (async () => {
-        await loadTemplate("gallery.html", document.getElementById('app'));
-        const userCardTemplate = document.querySelector("[data-contact-card-template]")
-        const userCardContainer = document.querySelector("[data-contact-cards-container]")
-
-        await loadTemplate("footer.html", document.getElementById('footer'));
-
-        await loadTemplate("header.html", document.getElementById('header'));
-        document.querySelector('#header h1').textContent = 'For You';
-
-        document.querySelector('#header .avatar').addEventListener('click', () => {
-          toggleProfileMenu(userId, state);
-        });
-
-        data.job_posts.map(post => {
-          console.log(`job post: ${post}`);
-          const card = userCardTemplate.content.cloneNode(true).children[0]
-          card.addEventListener('click', () => {
-            router.navigate(`/job-post/${post.id}`);
-          });
-
-          const header = card.querySelector("[data-header]");
-          const jobTitle = card.querySelector("[data-title]");
-          const location = card.querySelector("[data-location]");
-          header.innerHTML = `<h1>${post.normalized_score}</h1><span>/100</span>`;
-          jobTitle.textContent = post.job_title;
-          location.textContent = post.location;
-          userCardContainer.append(card);
-        })
-      })();
-    })
 }
 
 function toSentenceCase(str) {
@@ -392,86 +387,88 @@ function toSentenceCase(str) {
 }
 
 function updateFixedElementSizeAndPosition() {
-  const parent = document.querySelector('.container');
+  const parent = document.getElementById('app');
   const rect = parent.getBoundingClientRect(); // Get position & size of parent
 
   const fixedElement = document.querySelector('#chat-zone .chat-messages');
 
   if (fixedElement) {
     // Set size and position to match parent
-    fixedElement.style.width = `${rect.width}px`;
-    fixedElement.style.height = `${rect.height - 240}px`;
-    fixedElement.style.top = '60px';
-    fixedElement.style.left = `${rect.left}px`;
+    // fixedElement.style.width = `${rect.width}px`;
+    fixedElement.style.height = `${rect.height}px`;
+    // fixedElement.style.top = '60px';
+    // fixedElement.style.left = `${rect.left}px`;
   } else {
     console.error('Fixed element not found');
   }
 }
 
 async function getCompatibilityAnalysis(id) {
-  fetch(`${domain}/compatibility-analysis/${id}`, {
+  const response = await fetch(`${domain}/compatibility-analysis/${id}`, {
     method: 'GET',
     headers: {
       'Authorization': `Bearer ${localStorage.getItem('access_token')}`
     }
-  })
-    .then(response => {
-      if (!response.ok) {
-        if (response.status === 401) {
-          router.navigate('/login');
-        }
+  });
 
-        throw new Error('Network response was not ok ' + response.statusText);
-      }
-      return response.json(); // Return JSON data
-    })
-    .then(data => {
-      (async () => {
-        await loadTemplate("compatibility-analysis.html", document.getElementById('app'));
-        await loadTemplate("footer.html", document.getElementById('footer'));
+  if (!response.ok) {
+    if (response.status === 401) {
+      router.navigate('/login');
+    }
 
-        await loadTemplate("header.html", document.getElementById('header'));
-        document.querySelector('#header h1').textContent = 'Compatibility Analysis';
+    throw new Error('Network response was not ok ' + response.statusText);
+  }
 
-        document.querySelector('#header .avatar').addEventListener('click', () => {
-          toggleProfileMenu(userId, state);
-        });
+  const data = await response.json();
 
-        document.querySelector('.container .job-title').textContent = data.job_title;
-        document.querySelector('.container .username').textContent = data.username;
+  await loadTemplate("compatibility-analysis.html", document.getElementById('app'));
+  await loadTemplate("footer.html", document.getElementById('footer'));
 
-        let ul = document.querySelector('.container ul');
+  await loadTemplate("header.html", document.getElementById('header'));
+  document.querySelector('#header h1').textContent = 'Compatibility Analysis';
 
-        // loop through the keys of the object
-        for (let key in data.compatibility_analysis) {
-          let sentenceCasedKey = toSentenceCase(key);
+  document.querySelector('#header .avatar').addEventListener('click', () => {
+    toggleProfileMenu(userId, state);
+  });
 
-          let li = document.createElement('li');
-          li.textContent = `${sentenceCasedKey}: ${data.compatibility_analysis[key]}`;
-          ul.appendChild(li);
-        }
+  document.querySelector('.container .job-title').textContent = data.job_title;
+  document.querySelector('.container .username').textContent = data.username;
 
-        // select the p tag after the h2 tag
-        const p = document.querySelector('.full-analysis');
-        p.textContent = data.full_analysis;
+  let ul = document.querySelector('.container ul');
 
-        const chatButton = document.querySelector('.user-interaction-options .round-button.chat');
-        chatButton.addEventListener('click', () => {
-          router.navigate(`/chat?job_seeker_id=${data.job_seeker_id}&employer_id=${data.employer_id}&job_post_id=${data.job_post_id}`);
-        });
+  // loop through the keys of the object
+  for (let key in data.compatibility_analysis) {
+    let sentenceCasedKey = toSentenceCase(key);
 
-        const likeButton = document.querySelector('.user-interaction-options .round-button.like');
-        likeButton.addEventListener('click', () => {
-          router.navigate(`/you/${userId}/${state}?page=${parseInt(page) + 1}`);
-        });
-      })();
-    })
-    .catch(error => {
-      console.log('There has been a problem with your fetch operation: ', error);
-    });
+    let li = document.createElement('li');
+    li.textContent = `${sentenceCasedKey}: ${data.compatibility_analysis[key]}`;
+    ul.appendChild(li);
+  }
+
+  // select the p tag after the h2 tag
+  const p = document.querySelector('.full-analysis');
+  p.textContent = data.full_analysis;
+
+  const chatButton = document.querySelector('.user-interaction-options .round-button.chat');
+  chatButton.addEventListener('click', () => {
+    router.navigate(`/chat?job_seeker_id=${data.job_seeker_id}&employer_id=${data.employer_id}&job_post_id=${data.job_post_id}`);
+  });
+
+  const likeButton = document.querySelector('.user-interaction-options .round-button.like');
+  likeButton.addEventListener('click', () => {
+    router.navigate(`/you/${userId}/${state}?page=${parseInt(page) + 1}`);
+  });
 }
 
 async function getJobSeekers(jobPostId) {
+  const response = await fetch(`${domain}/job-seekers/${jobPostId}`, {
+    method: 'GET',
+    headers: {
+      'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+    }
+  });
+
+
   fetch(`${domain}/job-seekers/${jobPostId}`, {
     method: 'GET',
     headers: {
@@ -622,7 +619,7 @@ function isTokenExpired() {
     const now = Date.now() / 1000; // Convert to seconds
     if (now > expiry) {
       console.log("Token has expired");
-      
+
       return true;
     }
   } else {
@@ -688,125 +685,117 @@ function logout() {
 async function loadChat(jobSeekerId, employerId, jobPostId) {
   document.getElementById('header').innerHTML = '';
 
-  fetch(`${domain}/chat?job_seeker_id=${jobSeekerId}&employer_id=${employerId}&job_post_id=${jobPostId}`, {
+  const response = await fetch(`${domain}/chat?job_seeker_id=${jobSeekerId}&employer_id=${employerId}&job_post_id=${jobPostId}`, {
     method: 'GET',
     headers: {
       'Authorization': `Bearer ${localStorage.getItem('access_token')}`
     }
-  })
-    .then(response => {
-      if (!response.ok) {
-        if (response.status === 401) {
-          router.navigate('/login');
-        }
+  });
 
-        throw new Error(`HTTP error! status: ${response.status}`);
+  if (!response.ok) {
+    if (response.status === 401) {
+      router.navigate('/login');
+    }
+  }
+
+  const data = await response.json();
+
+  await loadTemplate("chat.html", document.getElementById('app'));
+  await loadTemplate("chat-footer.html", document.getElementById('footer'));
+
+  updateFixedElementSizeAndPosition();
+
+  window.onresize = updateFixedElementSizeAndPosition;
+
+  document.querySelector('.chat-title h1').textContent = data.job_title;
+
+  const chatMessages = document.querySelector('#chat-zone .chat-messages');
+
+  const token = localStorage.getItem('access_token');
+
+  let userId = null;
+  const decodedToken = parseJwt(token);
+  if (decodedToken) {
+    userId = decodedToken.user_id;
+    console.log("User ID:", userId);
+  }
+
+  data.chat.messages.slice().reverse().forEach(message => {
+    let messageItemDiv = document.createElement('div');
+
+    if (message.sender_id === userId) {
+      messageItemDiv.classList.add('message-item', 'sender');
+    } else {
+      messageItemDiv.classList.add('message-item', 'receiver');
+    }
+
+    let messageBlocDiv = document.createElement('div');
+    messageBlocDiv.classList.add('message-bloc');
+
+    let messageDiv = document.createElement('div');
+    messageDiv.classList.add('message');
+    messageDiv.textContent = message.content;
+
+    let dateTimeDiv = document.createElement('div');
+    dateTimeDiv.classList.add('date-time');
+    dateTimeDiv.textContent = formatTime12hr(new Date(message.date));
+
+    messageBlocDiv.appendChild(messageDiv);
+    messageBlocDiv.appendChild(dateTimeDiv);
+
+    messageItemDiv.appendChild(messageBlocDiv);
+
+    chatMessages.appendChild(messageItemDiv);
+  });
+
+  let chatInput = document.querySelector('#chat-input input[type="text"]');
+
+  let sendButton = document.querySelector('#chat-input button');
+  sendButton.addEventListener('click', function () {
+    const content = chatInput.value;
+    chatInput.value = '';
+
+    let messageItemDiv = document.createElement('div');
+
+    messageItemDiv.classList.add('message-item', 'sender');
+
+    let messageBlocDiv = document.createElement('div');
+    messageBlocDiv.classList.add('message-bloc');
+
+    let messageDiv = document.createElement('div');
+    messageDiv.classList.add('message');
+    messageDiv.textContent = content;
+
+    let dateTimeDiv = document.createElement('div');
+    dateTimeDiv.classList.add('date-time');
+    const now = new Date();
+    dateTimeDiv.textContent = formatTime12hr(now);
+
+    messageBlocDiv.appendChild(messageDiv);
+    messageBlocDiv.appendChild(dateTimeDiv);
+
+    messageItemDiv.appendChild(messageBlocDiv);
+
+    chatMessages.insertBefore(messageItemDiv, chatMessages.firstChild);
+
+    socket.emit('message_sent', {
+      chat_id: data.chat.id,
+      job_post_id: jobPostId,
+      message: {
+        sender_id: decodedToken.user_id,
+        receiver_id: data.receiver_id,
+        date: now.toISOString(),
+        read: false,
+        read_time: null,
+        message_type: 'text',
+        job_post_id: jobPostId,
+        content: content,
+        status: 'sent'
       }
-      return response.json();
-    })
-    .then(data => {
-      (async () => {
-        await loadTemplate("chat.html", document.getElementById('app'));
-        await loadTemplate("chat-footer.html", document.getElementById('footer'));
-
-        updateFixedElementSizeAndPosition();
-
-        window.onresize = updateFixedElementSizeAndPosition;
-
-        document.querySelector('.chat-title h1').textContent = data.job_title;
-
-        const chatMessages = document.querySelector('#chat-zone .chat-messages');
-
-        const token = localStorage.getItem('access_token');
-
-        let userId = null;
-        const decodedToken = parseJwt(token);
-        if (decodedToken) {
-          userId = decodedToken.user_id;
-          console.log("User ID:", userId);
-        }
-
-        data.chat.messages.slice().reverse().forEach(message => {
-          let messageItemDiv = document.createElement('div');
-
-          if (message.sender_id === userId) {
-            messageItemDiv.classList.add('message-item', 'sender');
-          } else {
-            messageItemDiv.classList.add('message-item', 'receiver');
-          }
-
-          let messageBlocDiv = document.createElement('div');
-          messageBlocDiv.classList.add('message-bloc');
-
-          let messageDiv = document.createElement('div');
-          messageDiv.classList.add('message');
-          messageDiv.textContent = message.content;
-
-          let dateTimeDiv = document.createElement('div');
-          dateTimeDiv.classList.add('date-time');
-          dateTimeDiv.textContent = formatTime12hr(new Date(message.date));
-
-          messageBlocDiv.appendChild(messageDiv);
-          messageBlocDiv.appendChild(dateTimeDiv);
-
-          messageItemDiv.appendChild(messageBlocDiv);
-
-          chatMessages.appendChild(messageItemDiv);
-        });
-
-        let chatInput = document.querySelector('#chat-input input[type="text"]');
-
-        let sendButton = document.querySelector('#chat-input button');
-        sendButton.addEventListener('click', function () {
-          const content = chatInput.value;
-          chatInput.value = '';
-
-          let messageItemDiv = document.createElement('div');
-
-          messageItemDiv.classList.add('message-item', 'sender');
-
-          let messageBlocDiv = document.createElement('div');
-          messageBlocDiv.classList.add('message-bloc');
-
-          let messageDiv = document.createElement('div');
-          messageDiv.classList.add('message');
-          messageDiv.textContent = content;
-
-          let dateTimeDiv = document.createElement('div');
-          dateTimeDiv.classList.add('date-time');
-          const now = new Date();
-          dateTimeDiv.textContent = formatTime12hr(now);
-
-          messageBlocDiv.appendChild(messageDiv);
-          messageBlocDiv.appendChild(dateTimeDiv);
-
-          messageItemDiv.appendChild(messageBlocDiv);
-
-          chatMessages.insertBefore(messageItemDiv, chatMessages.firstChild);
-
-          socket.emit('message_sent', {
-            chat_id: data.chat.id,
-            job_post_id: jobPostId,
-            message: {
-              sender_id: decodedToken.user_id,
-              receiver_id: data.receiver_id,
-              date: now.toISOString(),
-              read: false,
-              read_time: null,
-              message_type: 'text',
-              job_post_id: jobPostId,
-              content: content,
-              status: 'sent'
-            }
-          });
-        });
-
-        socket.emit('join_chat', { chat_id: data.chat.id });
-      })();
-    })
-    .catch(error => {
-      console.log('There has been a problem with your fetch operation: ', error);
     });
+  });
+
+  socket.emit('join_chat', { chat_id: data.chat.id });
 }
 
 function formatTime12hr(date) {
@@ -862,10 +851,10 @@ function registerSocketIOEventListeners() {
   });
 }
 
-async function refreshToken() {
+async function refreshAccessToken() {
   try {
-    console.log('Refreshing token...')
-    
+    console.log('Refreshing access token...')
+
     const response = await fetch(`${domain}/token/refresh`, {
       method: 'POST',
       headers: {
@@ -884,7 +873,7 @@ async function refreshToken() {
     const data = await response.json();
 
     return data;
-  } catch(error) {
+  } catch (error) {
     console.error('Error refreshing token:', error);
 
     throw error;
@@ -897,262 +886,300 @@ document.addEventListener('DOMContentLoaded', () => {
   router
     .on(() => {
       console.log('Matched the default route');
-      isTokenExpired();
-      // get claims from the token
-      const token = localStorage.getItem('access_token');
+      if (isTokenExpired()) {
+        refreshAccessToken().then(data => {
+          localStorage.setItem('access_token', data.access_token);
 
-      const decodedToken = parseJwt(token);
-      if (decodedToken) {
-        router.navigate(`/foryou/${decodedToken.user_id}/${decodedToken.state}?page=1`);
+          const token = parseJwt(data.access_token);
+
+          router.navigate(`/foryou/${token.user_id}/${token.state}?page=1`);
+        }).catch(error => {
+          console.error('Error refreshing token:', error);
+        });
+      } else {
+        const token = localStorage.getItem('access_token');
+        router.navigate(`/foryou/${token.user_id}/${token.state}?page=1`);
       }
     })
     .on("/login", (match) => {
       console.log(`Match value on login route: ${JSON.stringify(match)}`);
-      let loginForm = document.querySelector('.form .login-form');
 
-      loginForm.addEventListener('submit', function (e) {
-        e.preventDefault();
+      (async () => {
+        document.getElementById('footer').innerHTML = '';
+        document.getElementById('header').innerHTML = '';
 
-        const email = document.querySelector('.login-form input[type="text"]').value;
-        const password = document.querySelector('.login-form input[type="password"]').value;
+        await loadTemplate("login.html", document.getElementById('app'));
 
-        fetch(`${domain}/login`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ email: email, password: password }),
-        })
-          .then(response => {
+        let loginForm = document.querySelector('.form .login-form');
+
+        loginForm.addEventListener('submit', async function (e) {
+          e.preventDefault();
+
+          const email = document.querySelector('.login-form input[type="text"]').value;
+          const password = document.querySelector('.login-form input[type="password"]').value;
+
+          try {
+            const response = await fetch(`${domain}/login`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({ email: email, password: password }),
+            });
+
             if (!response.ok) {
               document.querySelector('.login .form p.message.error').textContent = 'Username or password is incorrect';
-
               throw new Error('Network response was not ok ' + response.statusText);
             }
 
-            return response.json();
-          })
-          .then(data => {
+            const data = await response.json();
+
             if (data.access_token && data.refresh_token) {
               // Store the JWT in localStorage or session storage
               localStorage.setItem('access_token', data.access_token);
               localStorage.setItem('refresh_token', data.refresh_token);
 
-              // log expiration date
-              const token = localStorage.getItem('access_token');
-              const payload = JSON.parse(atob(token.split('.')[1]));
-              const expiry = payload.exp;
-              const now = Date.now() / 1000; // Convert to seconds
-              console.log('Token expires in:', expiry - now, 'seconds');
-
-              // get claims from the access token
-              const decodedToken = parseJwt(data.access_token);
-              
-              if (decodedToken) {
-                router.navigate(`/foryou/${decodedToken.user_id}/${decodedToken.state}?page=1`);
-              }
-
+              const token = parseJwt(data.access_token);
+              router.navigate(`/foryou/${token.user_id}/${token.state}?page=1`);
             } else {
-              alert('Login failed');
+              throw new Error('Access token or refresh token not found in response');
             }
+          } catch (error) {
+            console.error('Error:', error);
+          }
+        });
+      })();
 
-            // setInterval(refreshToken, 30 * 1000);
-          })
-          .catch(error => console.error('Error:', error));
-      });
     }, {
       before(done) {
-        (async () => {
-          document.getElementById('footer').innerHTML = '';
-          document.getElementById('header').innerHTML = '';
-          await loadTemplate("login.html", document.getElementById('app'));
-          done();
-        })();
+        document.getElementById('footer').innerHTML = '';
+        document.getElementById('header').innerHTML = '';
+        loadTemplate("login.html", document.getElementById('app'));
+        done();
       }
     })
     .on("/foryou/:userId/:state", (match) => {
       console.log(`Match value on for you route: ${JSON.stringify(match)}`);
     }, {
       before(done, match) {
-        (async () => {
-          if(isTokenExpired()) {
-            refreshToken().then(data => {
-              console.log('Refresh token data:', data);
-              localStorage.setItem('access_token', data.access_token);
+        if (isTokenExpired()) {
+          refreshAccessToken().then(data => {
+            localStorage.setItem('access_token', data.access_token);
 
-              const token = data.access_token;
-              
-              const payload = JSON.parse(atob(token.split('.')[1]));
-              const expiry = payload.exp;
-              const now = Date.now() / 1000; // Convert to seconds
-              console.log('Token expires in:', expiry - now, 'seconds');
-              
-              const decodedToken = parseJwt(token);
-              
-              if (decodedToken) {
-                // get claims from the token
-                if (decodedToken.roles.includes('EMPLOYER')) {
-                  getJobPostListing(match.data.userId, match.data.state);
-                  // getJobSeekers(match.data.userId, match.data.state);
-                } else {
-                  getJobPosts(match.data.userId, match.data.state, match.params.page);
-                }
-              }
-            });
-          } else {
-            const token = localStorage.getItem('access_token');
-            
-            const payload = JSON.parse(atob(token.split('.')[1]));
-            const expiry = payload.exp;
-            const now = Date.now() / 1000; // Convert to seconds
-            console.log('Token expires in:', expiry - now, 'seconds');
-            
-            const decodedToken = parseJwt(token);
-            
-            if (decodedToken) {
-              // get claims from the token
-              if (decodedToken.roles.includes('EMPLOYER')) {
-                await getJobPostListing(match.data.userId, match.data.state);
-                // getJobSeekers(match.data.userId, match.data.state);
-              } else {
-                await getJobPosts(match.data.userId, match.data.state, match.params.page);
-              }
+            const token = parseJwt(data.access_token);
+
+            if (token.roles.includes('EMPLOYER')) {
+              getJobPostListing(match.data.userId, match.data.state);
+            } else {
+              getJobPosts(match.data.userId, match.data.state, match.params.page);
             }
-          }
+          });
+        } else {
+          // log expiration date
+          const token = parseJwt(localStorage.getItem('access_token'));
 
-          done();
-        })();
+          if (token.roles.includes('EMPLOYER')) {
+            getJobPostListing(match.data.userId, match.data.state);
+          } else {
+            getJobPosts(match.data.userId, match.data.state, match.params.page);
+          }
+        }
+
+        done();
       }
     })
     .on("/job-seekers/:jobPostId", (match) => {
       console.log(`Match value on job seekers route: ${JSON.stringify(match)}`);
     }, {
       before(done, match) {
-        (async () => {
-          await isTokenExpired();
-          await getJobSeekers(match.data.jobPostId);
-          done();
-        })();
+        if (isTokenExpired()) {
+          refreshAccessToken().then(data => {
+            localStorage.setItem('access_token', data.access_token);
+
+            getJobSeekers(match.data.jobPostId);
+          });
+        } else {
+          getJobSeekers(match.data.jobPostId);
+        }
+
+        done();
       }
     })
     .on("/job-post/:id", (match) => {
       console.log(`Match value on you route: ${JSON.stringify(match)}`);
     }, {
       before(done, match) {
-        (async () => {
-          await isTokenExpired();
+        if (isTokenExpired()) {
+          refreshAccessToken().then(data => {
+            localStorage.setItem('access_token', data.access_token);
 
-          // log expiration date
-          const token = localStorage.getItem('access_token');
-          const payload = JSON.parse(atob(token.split('.')[1]));
-          const expiry = payload.exp;
-          const now = Date.now() / 1000; // Convert to seconds
-          console.log('Token expires in:', expiry - now, 'seconds');
+            getJobPost(match.data.id);
+          });
+        } else {
+          getJobPost(match.data.id);
+        }
 
-          await getJobPost(match.data.id);
-
-          done();
-        })();
+        done();
       }
     })
     .on("/compatibility-analysis/:analysisId", (match) => {
     }, {
       before(done, match) {
-        (async () => {
-          await isTokenExpired();
+        if (isTokenExpired()) {
+          refreshAccessToken().then(data => {
+            localStorage.setItem('access_token', data.access_token);
 
-          // log expiration date
-          const token = localStorage.getItem('access_token');
-          const payload = JSON.parse(atob(token.split('.')[1]));
-          const expiry = payload.exp;
-          const now = Date.now() / 1000; // Convert to seconds
-          console.log('Token expires in:', expiry - now, 'seconds');
+            getCompatibilityAnalysis(match.data.analysisId);
+          });
+        } else {
+          getCompatibilityAnalysis(match.data.analysisId);
+        }
 
-          await getCompatibilityAnalysis(match.data.analysisId);
-          done();
-        })();
+        done();
       }
     })
     .on("/chats/:userId", (match) => {
       console.log(`Match value on chats route: ${JSON.stringify(match)}`);
     }, {
       before(done, match) {
-        (async () => {
-          await isTokenExpired();
-          await loadTemplate("chats.html", document.getElementById('app'));
-          await loadTemplate("footer.html", document.getElementById('footer'));
+        if (isTokenExpired()) {
+          refreshAccessToken().then(data => {
+            localStorage.setItem('access_token', data.access_token);
 
-          await loadTemplate("header.html", document.getElementById('header'));
+            loadTemplate("chats.html", document.getElementById('app'));
+            loadTemplate("footer.html", document.getElementById('footer'));
+
+            loadTemplate("header.html", document.getElementById('header'));
+            document.querySelector('#header h1').textContent = 'Chats';
+          });
+        } else {
+          loadTemplate("chats.html", document.getElementById('app'));
+          loadTemplate("footer.html", document.getElementById('footer'));
+
+          loadTemplate("header.html", document.getElementById('header'));
           document.querySelector('#header h1').textContent = 'Chats';
-          done();
-        })();
+        }
+
+        done();
       }
     })
     .on("/chat", (match) => {
       console.log(`Match value on chat route: ${JSON.stringify(match)}`);
     }, {
       before(done, match) {
-        (async () => {
-          await isTokenExpired();
-          await loadChat(match.params.job_seeker_id, match.params.employer_id, match.params.job_post_id);
-          done();
-        })();
+        if (isTokenExpired()) {
+          refreshAccessToken().then(data => {
+            localStorage.setItem('access_token', data.access_token);
+
+            loadChat(match.params.job_seeker_id, match.params.employer_id, match.params.job_post_id);
+          });
+        } else {
+          loadChat(match.params.job_seeker_id, match.params.employer_id, match.params.job_post_id);
+        }
+        done();
       }
     })
-    .on("/upload-resume", (match) => {
-      console.log(`Match value on upload resume route: ${JSON.stringify(match)}`);
+    .on("/upload/:userId/:state", (match) => {
+      console.log(`Match value on upload route: ${JSON.stringify(match)}`);
     }, {
       before(done, match) {
-        (async () => {
-          await isTokenExpired();
-          await loadTemplate("file-upload.html", document.getElementById('app'));
+        const user = {
+          id: match.data.userId,
+          state: match.data.state,
+        };
 
-          // remove all markup from the footer
-          document.getElementById('footer').innerHTML = '';
+        if (isTokenExpired()) {
+          refreshAccessToken().then(data => {
+            localStorage.setItem('access_token', data.access_token);
 
-          handleFileUpload('upload/job-description');
+            const token = parseJwt(data.access_token);
 
-          done();
-        })();
+            if (token.roles.includes('EMPLOYER')) {
+              handleFileUpload('upload/job-description', user);
+            } else {
+              handleFileUpload('upload/resume', user);
+            }
+          });
+        } else {
+          const token = localStorage.getItem('access_token');
+
+          if (token.roles.includes('EMPLOYER')) {
+            handleFileUpload('upload/job-description', user);
+          } else {
+            handleFileUpload('upload/resume', user);
+          }
+        }
+
+        done();
       }
     })
     .on("/profile/:userId/:state", (match) => {
       console.log(`Match value on profile route: ${JSON.stringify(match)}`);
     }, {
       before(done, match) {
-        (async () => {
-          await isTokenExpired();
-          const user = {
-            id: match.data.userId,
-            state: match.data.state,
-          };
-          handleFileUpload('upload/resume', user);
-          done();
-        })();
+        if (isTokenExpired()) {
+          refreshAccessToken().then(data => {
+            localStorage.setItem('access_token', data.access_token);
+
+            loadTemplate("profile.html", document.getElementById('app'));
+            loadTemplate("footer.html", document.getElementById('footer'));
+
+            loadTemplate("header.html", document.getElementById('header'));
+            document.querySelector('#header h1').textContent = 'Profile';
+
+            document.querySelector('#header .avatar').addEventListener('click', () => {
+              toggleProfileMenu(match.data.userId, match.data.state);
+            });
+          });
+        } else {
+          loadTemplate("profile.html", document.getElementById('app'));
+          loadTemplate("footer.html", document.getElementById('footer'));
+
+          loadTemplate("header.html", document.getElementById('header'));
+          document.querySelector('#header h1').textContent = 'Profile';
+
+          document.querySelector('#header .avatar').addEventListener('click', () => {
+            toggleProfileMenu(match.data.userId, match.data.state);
+          });
+        }
+        const user = {
+          id: match.data.userId,
+          state: match.data.state,
+        };
+        handleFileUpload('upload/resume', user);
+        done();
       }
     })
     .on("/settings/:userId", (match) => {
       console.log(`Match value on settings route: ${JSON.stringify(match)}`);
     }, {
       before(done, match) {
-        (async () => {
-          await isTokenExpired();
-          await loadTemplate("settings.html", document.getElementById('app'));
+        if (isTokenExpired()) {
+          refreshAccessToken().then(data => {
+            localStorage.setItem('access_token', data.access_token);
+            loadTemplate("settings.html", document.getElementById('app'));
+          });
+        } else {
+          loadTemplate("settings.html", document.getElementById('app'));
+        }
 
-          done();
-        })();
+        done();
       }
     })
     .on("/preferences/:userId", (match) => {
       console.log(`Match value on preferences route: ${JSON.stringify(match)}`);
     }, {
       before(done, match) {
-        (async () => {
-          await isTokenExpired();
-          await loadTemplate("preferences.html", document.getElementById('app'));
+        if (isTokenExpired()) {
+          refreshAccessToken().then(data => {
+            localStorage.setItem('access_token', data.access_token);
+            loadTemplate("preferences.html", document.getElementById('app'));
+          });
+        } else {
+          loadTemplate("preferences.html", document.getElementById('app'));
+        }
 
-          done();
-        })();
+        done();
       }
     })
     .resolve();
