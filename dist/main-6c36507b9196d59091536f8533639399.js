@@ -17,7 +17,7 @@ async function loadTemplate(name, element) {
       element.innerHTML = data;
     })
     .catch(error => {
-      console.log('There has been a problem with your fetch operation: ', error);
+      console.debug('There has been a problem with your fetch operation: ', error);
     });
 }
 
@@ -138,7 +138,7 @@ function uploadFile(endpoint, user) {
       return response.json(); // Return JSON data
     })
     .then(data => {
-      console.log('Success:', data);
+      console.debug('Success:', data);
       document.getElementById('file-to-upload').innerHTML = '';
       document.getElementById('upload-status').innerText = 'Upload successful!';
       // Re-enable the button
@@ -299,7 +299,7 @@ async function getJobPostListing(employerId, state) {
   const data = await response.json();
 
   loadTemplate("job-post-listing-14424a816a55ce227896b1252af8d814.html", document.getElementById('app'));
-  loadTemplate("footer-11c9a829e91bc79349c29e61c42c5fb8.html", document.getElementById('footer'));
+  loadTemplate("footer-0cf1295aa77c5fb4a2a0673f44851d0f.html", document.getElementById('footer'));
 
   await loadTemplate("header-eec68ed32b504a4e1b1ec348d14774e8.html", document.getElementById('header'));
   document.querySelector('#header h1').textContent = 'Job Posts';
@@ -310,7 +310,7 @@ async function getJobPostListing(employerId, state) {
 
   const cardTemplate = document.querySelector("[data-job-post-card-template]")
   const cardContainer = document.querySelector("[data-job-post-card-container]")
-  console.log('job listing data: ' + data);
+  console.debug('job listing data: ' + data);
   data.map(post => {
     const card = cardTemplate.content.cloneNode(true).children[0]
     card.addEventListener('click', () => {
@@ -327,8 +327,14 @@ async function getJobPostListing(employerId, state) {
   })
 }
 
-async function getJobPosts(userId, state, page) {
-  const response = await fetch(`${domain}/job-posts?page=${page}`, {
+async function getJobPosts(userId, state, page, liked) {
+  let url = `${domain}/job-posts?page=${page}`;
+  
+  if(liked) {
+    url = `${domain}/job-posts?page=${page}&liked=${liked}`;
+  }
+
+  const response = await fetch(url, {
     method: 'GET',
     headers: {
       'Authorization': `Bearer ${localStorage.getItem('access_token')}`
@@ -345,11 +351,16 @@ async function getJobPosts(userId, state, page) {
 
   const data = await response.json();
 
-  await loadTemplate("gallery-c19d9754e1f5b1e666792eb31d52e6ed.html", document.getElementById('app'));
+  await loadTemplate("gallery-7541a8e55baf01b38b04e10006627d5a.html", document.getElementById('app'));
   const userCardTemplate = document.querySelector("[data-contact-card-template]")
   const userCardContainer = document.querySelector("[data-contact-cards-container]")
 
-  loadTemplate("footer-11c9a829e91bc79349c29e61c42c5fb8.html", document.getElementById('footer'));
+  await loadTemplate("footer-0cf1295aa77c5fb4a2a0673f44851d0f.html", document.getElementById('footer'));
+  const forYouLink = document.querySelector('.footer-link.for-you');
+  forYouLink.href = `#/foryou/${userId}/${state}?page=1`;
+
+  const likesLink = document.querySelector('.footer-link.likes');
+  likesLink.href = `#/likes/${userId}/${state}?page=1`;
 
   await loadTemplate("header-eec68ed32b504a4e1b1ec348d14774e8.html", document.getElementById('header'));
   document.querySelector('#header h1').textContent = 'For You';
@@ -359,10 +370,10 @@ async function getJobPosts(userId, state, page) {
   });
 
   data.job_posts.map(post => {
-    console.log(`job post: ${post}`);
+    console.debug(`job post: ${post}`);
     const card = userCardTemplate.content.cloneNode(true).children[0]
     card.addEventListener('click', () => {
-      router.navigate(`/job-post/${post.id}`);
+      router.navigate(`/compatibility-analysis/${post.id}`);
     });
 
     const header = card.querySelector("[data-header]");
@@ -421,8 +432,17 @@ async function getCompatibilityAnalysis(id) {
 
   const data = await response.json();
 
-  await loadTemplate("compatibility-analysis-10a7b4f54889c442fd7a8d2668b83150.html", document.getElementById('app'));
-  await loadTemplate("footer-11c9a829e91bc79349c29e61c42c5fb8.html", document.getElementById('footer'));
+  const token = parseJwt(localStorage.getItem('access_token'));
+  const userId = token.user_id;
+  const state = token.state;
+
+  await loadTemplate("compatibility-analysis-a1f434b530eaece19f009828ce815dfc.html", document.getElementById('app'));
+  await loadTemplate("footer-0cf1295aa77c5fb4a2a0673f44851d0f.html", document.getElementById('footer'));
+  const forYouLink = document.querySelector('.footer-link.for-you');
+  forYouLink.href = `#/foryou/${userId}/${state}?page=1`;
+
+  const likesLink = document.querySelector('.footer-link.likes');
+  likesLink.href = `#/likes/${userId}/${state}?page=1`;
 
   await loadTemplate("header-eec68ed32b504a4e1b1ec348d14774e8.html", document.getElementById('header'));
   document.querySelector('#header h1').textContent = 'Compatibility Analysis';
@@ -456,18 +476,22 @@ async function getCompatibilityAnalysis(id) {
 
   const likeButton = document.querySelector('.user-interaction-options .round-button.like');
   likeButton.addEventListener('click', () => {
-    router.navigate(`/you/${userId}/${state}?page=${parseInt(page) + 1}`);
+    markCompatibilityAnalysis(id, 'Y', true, true);
+  });
+
+  const dislikeButton = document.querySelector('.user-interaction-options .round-button.dislike');
+  dislikeButton.addEventListener('click', () => {
+    markCompatibilityAnalysis(id, 'N', true, true);
   });
 }
 
 async function getJobSeekers(jobPostId) {
-  const response = await fetch(`${domain}/job-seekers/${jobPostId}`, {
-    method: 'GET',
-    headers: {
-      'Authorization': `Bearer ${localStorage.getItem('access_token')}`
-    }
-  });
-
+  // const response = await fetch(`${domain}/job-seekers/${jobPostId}`, {
+  //   method: 'GET',
+  //   headers: {
+  //     'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+  //   }
+  // });
 
   fetch(`${domain}/job-seekers/${jobPostId}`, {
     method: 'GET',
@@ -488,8 +512,8 @@ async function getJobSeekers(jobPostId) {
     .then(data => {
       (async () => {
 
-        await loadTemplate("gallery-c19d9754e1f5b1e666792eb31d52e6ed.html", document.getElementById('app'));
-        await loadTemplate("footer-11c9a829e91bc79349c29e61c42c5fb8.html", document.getElementById('footer'));
+        await loadTemplate("gallery-7541a8e55baf01b38b04e10006627d5a.html", document.getElementById('app'));
+        await loadTemplate("footer-0cf1295aa77c5fb4a2a0673f44851d0f.html", document.getElementById('footer'));
 
         await loadTemplate("header-eec68ed32b504a4e1b1ec348d14774e8.html", document.getElementById('header'));
         document.querySelector('#header h1').textContent = 'For You';
@@ -500,6 +524,9 @@ async function getJobSeekers(jobPostId) {
 
         const userCardTemplate = document.querySelector("[data-contact-card-template]")
         const userCardContainer = document.querySelector("[data-contact-cards-container]")
+
+        const h1 = document.querySelector('.job-title');
+        h1.textContent = data.job_seekers[0].job_title;
 
         data.job_seekers.map(jobSeeker => {
           const card = userCardTemplate.content.cloneNode(true).children[0]
@@ -519,96 +546,138 @@ async function getJobSeekers(jobPostId) {
     })
 }
 
-async function getJobPost(id) {
-  fetch(`${domain}/job-posts?compatibility-analysis-id=${id}`, {
+async function getJobSeekerCompatibilityAnalysis(compatibility_analysis_id) {
+  const response = await fetch(`${domain}/job-seeker-compatibility-analysis/${compatibility_analysis_id}`, {
     method: 'GET',
     headers: {
       'Authorization': `Bearer ${localStorage.getItem('access_token')}`
     }
-  })
-    .then(response => {
-      if (!response.ok) {
-        if (response.status === 401) {
-          router.navigate('/login');
-        }
+  });
 
-        throw new Error('Network response was not ok ' + response.statusText);
-      }
-      return response.json();
-    })
-    .then(data => {
-      (async () => {
-        let decodedToken = parseJwt(localStorage.getItem('access_token'));
-        let userId = null;
-        let state = null;
-        if (decodedToken) {
-          userId = decodedToken.user_id;
-          state = decodedToken.state;
-        }
-        await loadTemplate("job-post-68b405b145000f38dbd20b638b1c97aa.html", document.getElementById('app'));
-        await loadTemplate("footer-11c9a829e91bc79349c29e61c42c5fb8.html", document.getElementById('footer'));
+  if (!response.ok) {
+    if (response.status === 401) {
+      router.navigate('/login');
+    }
 
-        await loadTemplate("header-eec68ed32b504a4e1b1ec348d14774e8.html", document.getElementById('header'));
-        document.querySelector('#header h1').textContent = 'For You';
+    if (response.status === 404) {
+      router.navigate('/no-job-posts');
+    }
 
-        document.querySelector('#header .avatar').addEventListener('click', () => {
-          toggleProfileMenu(userId, state);
-        });
+    throw new Error('Network response was not ok ' + response.statusText);
+  }
 
-        const jobPost = data.job_post;
+  const data = await response.json();
 
-        document.querySelector('.container h1').textContent = jobPost.title;
-        document.querySelector('.container .percentage').innerHTML = `${data.normalized_score}<span>/100</span>`;
-        document.querySelector('.container .content p').textContent = jobPost.description;
+  let decodedToken = parseJwt(localStorage.getItem('access_token'));
+  let userId = null;
+  let state = null;
+  if (decodedToken) {
+    userId = decodedToken.user_id;
+    state = decodedToken.state;
+  }
+  await loadTemplate("job-post-42ca49be746eb64bc8f08c8cf4ab6877.html", document.getElementById('app'));
+  
+  await loadTemplate("footer-0cf1295aa77c5fb4a2a0673f44851d0f.html", document.getElementById('footer'));
+  const forYouLink = document.querySelector('.footer-link.for-you');
+  forYouLink.href = `#/foryou/${userId}/${state}?page=1`;
 
-        const responsibilitiesUL = document.getElementById('responsibilities');
-        jobPost.responsibilities.forEach(responsibility => {
-          let li = document.createElement('li');
-          li.textContent = responsibility;
-          responsibilitiesUL.appendChild(li);
-        });
+  const likesLink = document.querySelector('.footer-link.likes');
+  likesLink.href = `#/likes/${userId}/${state}?page=1`;
 
-        const requiredSkillsUL = document.getElementById('required-skills');
-        jobPost.required_skills.forEach(skill => {
-          let li = document.createElement('li');
-          li.textContent = skill;
-          requiredSkillsUL.appendChild(li);
-        });
+  await loadTemplate("header-eec68ed32b504a4e1b1ec348d14774e8.html", document.getElementById('header'));
+  document.querySelector('#header h1').textContent = 'For You';
 
-        const softSkillsUL = document.getElementById('soft-skills');
-        jobPost.soft_skills.forEach(skill => {
-          let li = document.createElement('li');
-          li.textContent = skill;
-          softSkillsUL.appendChild(li);
-        });
+  document.querySelector('#header .avatar').addEventListener('click', () => {
+    toggleProfileMenu(userId, state);
+  });
 
-        if (typeof jobPost.benefits === 'string') {
-          document.getElementById('benefits').innerHTML = `<li>${jobPost.benefits}</li>`;
-        } else if (Array.isArray(jobPost.benefits) && jobPost.benefits.length > 0) {
-          const benefitsUL = document.getElementById('benefits');
-          jobPost.benefits.forEach(benefit => {
-            let li = document.createElement('li');
-            li.textContent = benefit;
-            benefitsUL.appendChild(li);
-          });
-        } else {
-          document.getElementById('benefits').innerHTML = '<li>No benefits listed</li>';
-        }
+  const jobPost = data.job_post;
 
-        const chatButton = document.querySelector('.user-interaction-options .round-button.chat');
-        chatButton.addEventListener('click', () => {
-          router.navigate(`/chat?job_seeker_id=${userId}&employer_id=${jobPost.employer_id}&job_post_id=${jobPost.id}`);
-        });
+  document.querySelector('.container h1').textContent = jobPost.title;
+  document.querySelector('.container .percentage').innerHTML = `${data.normalized_score}<span>/100</span>`;
+  document.querySelector('.container .content p').textContent = jobPost.description;
 
-        const likeButton = document.querySelector('.user-interaction-options .round-button.like');
-        likeButton.addEventListener('click', () => {
-          router.navigate(`/you/${userId}/${state}?page=${parseInt(page) + 1}`);
-        });
-      })();
-    })
-    .catch(error => {
-      console.log('There has been a problem with your fetch operation: ', error);
+  const responsibilitiesUL = document.getElementById('responsibilities');
+  jobPost.responsibilities.forEach(responsibility => {
+    let li = document.createElement('li');
+    li.textContent = responsibility;
+    responsibilitiesUL.appendChild(li);
+  });
+
+  const requiredSkillsUL = document.getElementById('required-skills');
+  jobPost.required_skills.forEach(skill => {
+    let li = document.createElement('li');
+    li.textContent = skill;
+    requiredSkillsUL.appendChild(li);
+  });
+
+  const softSkillsUL = document.getElementById('soft-skills');
+  jobPost.soft_skills.forEach(skill => {
+    let li = document.createElement('li');
+    li.textContent = skill;
+    softSkillsUL.appendChild(li);
+  });
+
+  if (typeof jobPost.benefits === 'string') {
+    document.getElementById('benefits').innerHTML = `<li>${jobPost.benefits}</li>`;
+  } else if (Array.isArray(jobPost.benefits) && jobPost.benefits.length > 0) {
+    const benefitsUL = document.getElementById('benefits');
+    jobPost.benefits.forEach(benefit => {
+      let li = document.createElement('li');
+      li.textContent = benefit;
+      benefitsUL.appendChild(li);
     });
+  } else {
+    document.getElementById('benefits').innerHTML = '<li>No benefits listed</li>';
+  }
+
+  const chatButton = document.querySelector('.user-interaction-options .round-button.chat');
+  chatButton.addEventListener('click', () => {
+    router.navigate(`/chat?job_seeker_id=${userId}&employer_id=${jobPost.employer_id}&job_post_id=${jobPost.id}`);
+  });
+
+  const likeButton = document.querySelector('.round-button.like');
+  likeButton.addEventListener('click', async () => {
+    markCompatibilityAnalysis(compatibility_analysis_id, 'Y');
+  });
+
+  const dislikeButton = document.querySelector('.round-button.dislike');
+  dislikeButton.addEventListener('click', () => {
+    markCompatibilityAnalysis(compatibility_analysis_id, 'N');
+  });
+}
+
+async function markCompatibilityAnalysis(compatibility_analysis_id, like, employer) {
+  let endpoint = 'mark-compatibility-analysis';
+
+  if(employer) {
+    endpoint = '/mark-jobseeker-compatibility-analysis';
+  }
+
+  const response = await fetch(`${domain}/${endpoint}/${compatibility_analysis_id}?like=${like}`, {
+    method: 'PUT',
+    headers: {
+      'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+    }
+  });
+
+  if (!response.ok) {
+    if (response.status === 401) {
+      router.navigate('/login');
+    }
+
+    throw new Error('Network response was not ok ' + response.statusText);
+  }
+
+  if(response.status === 204) {
+    router.navigate('/no-job-posts');
+
+    return;
+  }
+
+  const data = await response.json();
+
+  router.navigate('/compatibility-analysis/' + data.next);
 }
 
 function isTokenExpired() {
@@ -618,7 +687,7 @@ function isTokenExpired() {
     const expiry = payload.exp;
     const now = Date.now() / 1000; // Convert to seconds
     if (now > expiry) {
-      console.log("Token has expired");
+      console.debug("Token has expired");
 
       return true;
     }
@@ -717,7 +786,7 @@ async function loadChat(jobSeekerId, employerId, jobPostId) {
   const decodedToken = parseJwt(token);
   if (decodedToken) {
     userId = decodedToken.user_id;
-    console.log("User ID:", userId);
+    console.debug("User ID:", userId);
   }
 
   data.chat.messages.slice().reverse().forEach(message => {
@@ -813,7 +882,7 @@ function formatTime12hr(date) {
 
 function registerSocketIOEventListeners() {
   socket.on('connect', () => {
-    console.log('Connected to the server');
+    console.debug('Connected to the server');
   });
 
   socket.on('new_message', (data) => {
@@ -847,13 +916,13 @@ function registerSocketIOEventListeners() {
   });
 
   socket.on('chat_joined', (data) => {
-    console.log(`Joined chat: ${data.chat_id}`);
+    console.debug(`Joined chat: ${data.chat_id}`);
   });
 }
 
 async function refreshAccessToken() {
   try {
-    console.log('Refreshing access token...')
+    console.debug('Refreshing access token...')
 
     const response = await fetch(`${domain}/token/refresh`, {
       method: 'POST',
@@ -863,7 +932,7 @@ async function refreshAccessToken() {
     });
 
     if (!response.ok) {
-      if (response.status === 401) {
+      if (response.status === 401 || response.status === 500) {
         router.navigate('/login');
       }
 
@@ -885,7 +954,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   router
     .on(() => {
-      console.log('Matched the default route');
+      console.debug('Matched the default route');
       if (isTokenExpired()) {
         refreshAccessToken().then(data => {
           localStorage.setItem('access_token', data.access_token);
@@ -902,7 +971,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     })
     .on("/login", (match) => {
-      console.log(`Match value on login route: ${JSON.stringify(match)}`);
+      console.debug(`Match value on login route: ${JSON.stringify(match)}`);
 
       (async () => {
         document.getElementById('footer').innerHTML = '';
@@ -959,7 +1028,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     })
     .on("/foryou/:userId/:state", (match) => {
-      console.log(`Match value on for you route: ${JSON.stringify(match)}`);
+
     }, {
       before(done, match) {
         if (isTokenExpired()) {
@@ -989,7 +1058,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     })
     .on("/job-seekers/:jobPostId", (match) => {
-      console.log(`Match value on job seekers route: ${JSON.stringify(match)}`);
+      console.debug(`Match value on job seekers route: ${JSON.stringify(match)}`);
     }, {
       before(done, match) {
         if (isTokenExpired()) {
@@ -1005,41 +1074,37 @@ document.addEventListener('DOMContentLoaded', () => {
         done();
       }
     })
-    .on("/job-post/:id", (match) => {
-      console.log(`Match value on you route: ${JSON.stringify(match)}`);
-    }, {
-      before(done, match) {
-        if (isTokenExpired()) {
-          refreshAccessToken().then(data => {
-            localStorage.setItem('access_token', data.access_token);
-
-            getJobPost(match.data.id);
-          });
-        } else {
-          getJobPost(match.data.id);
-        }
-
-        done();
-      }
-    })
     .on("/compatibility-analysis/:analysisId", (match) => {
+      console.debug(`Match value on chats route: ${JSON.stringify(match)}`);
     }, {
       before(done, match) {
         if (isTokenExpired()) {
           refreshAccessToken().then(data => {
             localStorage.setItem('access_token', data.access_token);
 
-            getCompatibilityAnalysis(match.data.analysisId);
+            const token = parseJwt(data.access_token);
+
+            if(token.roles.includes('EMPLOYER')) {
+              getCompatibilityAnalysis(match.data.analysisId);
+            } else {
+              getJobSeekerCompatibilityAnalysis(match.data.analysisId);
+            }
           });
         } else {
-          getCompatibilityAnalysis(match.data.analysisId);
+          const token = parseJwt(localStorage.getItem('access_token'));
+          
+          if(token.roles.includes('EMPLOYER')) {
+            getCompatibilityAnalysis(match.data.analysisId);
+          } else {
+            getJobSeekerCompatibilityAnalysis(match.data.analysisId);
+          }
         }
 
         done();
       }
     })
     .on("/chats/:userId", (match) => {
-      console.log(`Match value on chats route: ${JSON.stringify(match)}`);
+      console.debug(`Match value on chats route: ${JSON.stringify(match)}`);
     }, {
       before(done, match) {
         if (isTokenExpired()) {
@@ -1047,14 +1112,14 @@ document.addEventListener('DOMContentLoaded', () => {
             localStorage.setItem('access_token', data.access_token);
 
             loadTemplate("chats-7aaaad2c6390698810e0a82353682c12.html", document.getElementById('app'));
-            loadTemplate("footer-11c9a829e91bc79349c29e61c42c5fb8.html", document.getElementById('footer'));
+            loadTemplate("footer-0cf1295aa77c5fb4a2a0673f44851d0f.html", document.getElementById('footer'));
 
             loadTemplate("header-eec68ed32b504a4e1b1ec348d14774e8.html", document.getElementById('header'));
             document.querySelector('#header h1').textContent = 'Chats';
           });
         } else {
           loadTemplate("chats-7aaaad2c6390698810e0a82353682c12.html", document.getElementById('app'));
-          loadTemplate("footer-11c9a829e91bc79349c29e61c42c5fb8.html", document.getElementById('footer'));
+          loadTemplate("footer-0cf1295aa77c5fb4a2a0673f44851d0f.html", document.getElementById('footer'));
 
           loadTemplate("header-eec68ed32b504a4e1b1ec348d14774e8.html", document.getElementById('header'));
           document.querySelector('#header h1').textContent = 'Chats';
@@ -1064,7 +1129,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     })
     .on("/chat", (match) => {
-      console.log(`Match value on chat route: ${JSON.stringify(match)}`);
+      console.debug(`Match value on chat route: ${JSON.stringify(match)}`);
     }, {
       before(done, match) {
         if (isTokenExpired()) {
@@ -1080,7 +1145,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     })
     .on("/upload/:userId/:state", (match) => {
-      console.log(`Match value on upload route: ${JSON.stringify(match)}`);
+      console.debug(`Match value on upload route: ${JSON.stringify(match)}`);
     }, {
       before(done, match) {
         const user = {
@@ -1114,7 +1179,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     })
     .on("/profile/:userId/:state", (match) => {
-      console.log(`Match value on profile route: ${JSON.stringify(match)}`);
+      console.debug(`Match value on profile route: ${JSON.stringify(match)}`);
     }, {
       before(done, match) {
         if (isTokenExpired()) {
@@ -1122,7 +1187,7 @@ document.addEventListener('DOMContentLoaded', () => {
             localStorage.setItem('access_token', data.access_token);
 
             loadTemplate("profile-448518c07b2836cf2706151c20b876d4.html", document.getElementById('app'));
-            loadTemplate("footer-11c9a829e91bc79349c29e61c42c5fb8.html", document.getElementById('footer'));
+            loadTemplate("footer-0cf1295aa77c5fb4a2a0673f44851d0f.html", document.getElementById('footer'));
 
             loadTemplate("header-eec68ed32b504a4e1b1ec348d14774e8.html", document.getElementById('header'));
             document.querySelector('#header h1').textContent = 'Profile';
@@ -1133,7 +1198,7 @@ document.addEventListener('DOMContentLoaded', () => {
           });
         } else {
           loadTemplate("profile-448518c07b2836cf2706151c20b876d4.html", document.getElementById('app'));
-          loadTemplate("footer-11c9a829e91bc79349c29e61c42c5fb8.html", document.getElementById('footer'));
+          loadTemplate("footer-0cf1295aa77c5fb4a2a0673f44851d0f.html", document.getElementById('footer'));
 
           loadTemplate("header-eec68ed32b504a4e1b1ec348d14774e8.html", document.getElementById('header'));
           document.querySelector('#header h1').textContent = 'Profile';
@@ -1151,7 +1216,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     })
     .on("/settings/:userId", (match) => {
-      console.log(`Match value on settings route: ${JSON.stringify(match)}`);
+      console.debug(`Match value on settings route: ${JSON.stringify(match)}`);
     }, {
       before(done, match) {
         if (isTokenExpired()) {
@@ -1167,7 +1232,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     })
     .on("/preferences/:userId", (match) => {
-      console.log(`Match value on preferences route: ${JSON.stringify(match)}`);
+      console.debug(`Match value on preferences route: ${JSON.stringify(match)}`);
     }, {
       before(done, match) {
         if (isTokenExpired()) {
@@ -1177,6 +1242,27 @@ document.addEventListener('DOMContentLoaded', () => {
           });
         } else {
           loadTemplate("preferences-d41d8cd98f00b204e9800998ecf8427e.html", document.getElementById('app'));
+        }
+
+        done();
+      }
+    })
+    .on("/no-job-posts", (match) => {
+      console.debug(`Match value on no job posts route: ${JSON.stringify(match)}`);
+      loadTemplate("no-job-posts-699379345f6871ba558de4d76817024b.html", document.getElementById('app'));
+    })
+    .on('/likes/:userId/:state', (match) => {
+      console.debug(`Match value on likes route: ${JSON.stringify(match)}`);
+    }, {
+      before(done, match) {
+        if (isTokenExpired()) {
+          refreshAccessToken().then(data => {
+            localStorage.setItem('access_token', data.access_token);
+            
+            getJobPosts(match.data.userId, match.data.state, match.params.page, 'true');
+          });
+        } else {
+          getJobPosts(match.data.userId, match.data.state, match.params.page, 'true');
         }
 
         done();
