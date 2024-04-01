@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Bumble For Jobs</title>
   <link rel="stylesheet" href="reset.css">
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="web-components.css">
   <script>
     (function () {
       var src = "//cdn.jsdelivr.net/npm/eruda";
@@ -18,17 +18,12 @@
       document.write("<scr" + "ipt>eruda.init();</scr" + "ipt>");
     })();
   </script>
-</head>
-<body>
-  <div id="profile-menu"></div>
-  <div id="header"></div>
-  <div id="app"></div>
-  <div id="footer"></div>
   <script src="//unpkg.com/navigo"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"
     integrity="sha512-Xm9qbB6Pu06k3PUwPj785dyTl6oHxgsv9nHp7ej7nCpAqGZT3OZpsELuCYX05DdonFpTlBpXMOxjavIAIUwr0w=="
     crossorigin="anonymous" referrerpolicy="no-referrer"></script>
   <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8/hammer.min.js"></script>
+  
   <script>
     window.jdenticon_config = {
       replaceMode: "observe"
@@ -37,6 +32,10 @@
   <script src="https://cdn.jsdelivr.net/npm/jdenticon@3.2.0/dist/jdenticon.min.js"
     integrity="sha384-yBhgDqxM50qJV5JPdayci8wCfooqvhFYbIKhv0hTtLvfeeyJMJCscRfFNKIxt43M" crossorigin="anonymous">
   </script>
-  <script src="main.js"></script>
+
+  <script src="app.js" type="module"></script>
+</head>
+<body>
+  <div id="app"></div>
 </body>
 </html>
