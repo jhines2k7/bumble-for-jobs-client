@@ -1,0 +1,42 @@
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  background: #f0f0f0;
+}
+#router-outlet {
+  height: 100vh;
+  margin: 0 auto;
+  max-width: 440px;
+  /* background-color: #f0f0f0; */
+  /* box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.3), -5px -5px 10px rgba(255, 255, 255, 0.5); */
+  /* padding: 0 20px 60px 20px; */
+}
+/*
+#router-outlet:before, #router-outlet:after {
+  content: "";
+  display: block;
+  clear: both;
+}
+#router-outlet .info {
+  margin: 50px auto;
+  text-align: center;
+}
+#router-outlet .info h1 {
+  margin: 0 0 15px;
+  padding: 0;
+  font-size: 36px;
+  font-weight: 300;
+  color: #1a1a1a;
+}
+#router-outlet .info span {
+  color: #4d4d4d;
+  font-size: 12px;
+}
+#router-outlet .info span a {
+  color: #000000;
+  text-decoration: none;
+}
+#router-outlet .info span .fa {
+  color: #EF3B3A;
+}
+*/

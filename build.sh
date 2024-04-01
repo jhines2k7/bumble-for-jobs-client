@@ -1,20 +1,19 @@
 #!/bin/bash
 
-# Parse commandline arguments
+# Parse command line arguments
 while [[ $# -gt 0 ]]
 do
-key="$1"
-
-case $key in
+  key="$1"
+  case $key in
     -e|--environment)
-    environment="$2"
-    shift # past argument
-    shift # past value
-    ;;
-    *)    # unknown option
-    shift # past argument
-    ;;
-esac
+      environment="$2"
+      shift # past argument
+      shift # past value
+      ;;
+    *) # unknown option
+      shift # past argument
+      ;;
+  esac
 done
 
 # Set domain based on environment
@@ -33,61 +32,48 @@ if [ -d "dist" ]; then
   rm -r dist
 fi
 
-# Path to the JavaScript file
-js_file="main.js"
-css_file="styles.css"
+# Path to the JavaScript files in the components directory
+js_files=(components/*.js)
+
+# Path to the CSS files
+css_files=("styles.css" "reset.css" "web-components.css")
 
 # Path to your HTML file
 html_file="index.html"
 
-# Directory to store the new file
+# Directory to store the new files
 dist_folder="dist"
+dist_components_folder="dist/components"
 
-# Create the dist folder if it doesn't exist
+# Create the dist folder and components subfolder if they don't exist
 mkdir -p $dist_folder
-
-# Generate a hash of the JavaScript file
-filehash=$(md5sum $js_file | cut -d ' ' -f 1)
-csshash=$(md5sum $css_file | cut -d ' ' -f 1)
-
-# New JavaScript file name with hash in the dist folder
-new_js_file="$dist_folder/$(basename $js_file .js)-${filehash}.js"
-new_css_file="$dist_folder/$(basename $css_file .css)-${csshash}.css"
-
-# Copy the JavaScript file to the new location with the new name
-cp $js_file $new_js_file
-cp $css_file $new_css_file
-
-# Copy all .css files to the dist folder
-cp *.css $dist_folder
-# cp -r lib $dist_folder
-
-# Copy the fonts folder to the dist folder
-# cp -r fonts $dist_folder
-
-# Handle the templates directory
-if [ -d "templates" ]; then
-  cp -r templates $dist_folder/templates
-  for file in templates/*; do
-    if [ -f "$file" ]; then
-      filehash=$(md5sum $file | cut -d ' ' -f 1)
-      newfilename="$(basename $file .html)-${filehash}.html"
-      mv "$dist_folder/templates/$(basename $file)" "$dist_folder/templates/$newfilename"
-
-      # Update reference in main.js
-      sed -i 's|'$(basename $file)'|'$newfilename'|g' $new_js_file
-    fi
-  done
-fi
+mkdir -p $dist_components_folder
 
 # Copy the HTML file to the dist folder
 cp $html_file $dist_folder
 
-rm $dist_folder/$css_file
+# Copy the utils file to the dist folder
+cp utils.js $dist_folder
 
-# Update the HTML file in the dist folder with the new JavaScript file name and domain
-sed -i 's|'$(basename $js_file)'|'$(basename $new_js_file)'|g' $dist_folder/$html_file
-sed -i 's|'$(basename $css_file)'|'$(basename $new_css_file)'|g' $dist_folder/$html_file
-sed -i 's|http://localhost:8000|https://'"$domain"'|g' $new_js_file
+# Process JavaScript files
+for js_file in "${js_files[@]}"; do
+  filehash=$(md5sum $js_file | cut -d ' ' -f 1)
+  new_js_file="$dist_components_folder/$(basename $js_file .js)-${filehash}.js"
+  cp $js_file $new_js_file
+  sed -i 's|http://localhost:8000|https://'"$domain"'|g' $new_js_file
+  
+  # Update the HTML file with the new JavaScript file name
+  sed -i 's|'$(basename $js_file)'|'$(basename $js_file .js)'-'$filehash'.js|g' $dist_folder/$html_file
+done
 
-echo "Cache busting done. JS file copied to dist and HTML reference updated."
+# Process CSS files
+for css_file in "${css_files[@]}"; do
+  csshash=$(md5sum $css_file | cut -d ' ' -f 1)
+  new_css_file="$dist_folder/$(basename $css_file .css)-${csshash}.css"
+  cp $css_file $new_css_file
+  
+  # Update the HTML file with the new CSS file name
+  sed -i 's|'$(basename $css_file)'|'$(basename $css_file .css)'-'$csshash'.css|g' $dist_folder/$html_file
+done
+
+echo "Cache busting done. Files copied to dist and HTML references updated."
