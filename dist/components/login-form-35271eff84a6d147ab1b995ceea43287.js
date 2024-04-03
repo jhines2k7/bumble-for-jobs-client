@@ -1,3 +1,5 @@
+import { domain, parseJwt } from '../utils.js';
+
 const styles = new CSSStyleSheet();
 styles.replaceSync(`
   @import url(https://fonts.googleapis.com/css?family=Roboto:300);
@@ -6,19 +8,18 @@ styles.replaceSync(`
     font-family: "Roboto", sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    padding: 8% 0 0;
-    margin: auto;
+    margin: 50px auto 0;
   }
+
   .form {
-    position: relative;
     z-index: 1;
     background: #FFFFFF;
-    width: 360px;
     margin: 0 auto;
-    padding: 45px;
+    padding: 40px;
     text-align: center;
     box-shadow: 0 0 20px 0 rgba(0, 0, 0, 0.2), 0 5px 5px 0 rgba(0, 0, 0, 0.24);
   }
+
   .form input {
     font-family: "Roboto", sans-serif;
     outline: 0;
@@ -30,6 +31,7 @@ styles.replaceSync(`
     box-sizing: border-box;
     font-size: 14px;
   }
+
   .form button {
     font-family: "Roboto", sans-serif;
     text-transform: uppercase;
@@ -44,18 +46,22 @@ styles.replaceSync(`
     transition: all 0.3 ease;
     cursor: pointer;
   }
+
   .form button:hover,.form button:active,.form button:focus {
     background: #43A047;
   }
+
   .form .message {
     margin: 15px 0 0;
     color: #b3b3b3;
     font-size: 12px;
   }
+
   .form .message a {
     color: #4CAF50;
     text-decoration: none;
   }
+  
   .form .register-form {
     display: none;
   }
@@ -90,14 +96,14 @@ export class LoginForm extends HTMLElement {
       </div>
     `;
 
-    this.querySelector('form').addEventListener('submit', this.handleLogin.bind(this));
+    this.shadowRoot.querySelector('.login-form').addEventListener('submit', this.handleLogin.bind(this));
   }
 
   async handleLogin(event) {
     event.preventDefault();
 
-    const email = document.querySelector('.login-form input[type="text"]').value;
-    const password = document.querySelector('.login-form input[type="password"]').value;
+    const email = this.shadowRoot.querySelector('.login-form input[type="text"]').value;
+    const password = this.shadowRoot.querySelector('.login-form input[type="password"]').value;
 
     try {
       const response = await fetch(`${domain}/login`, {
@@ -109,7 +115,7 @@ export class LoginForm extends HTMLElement {
       });
 
       if (!response.ok) {
-        document.querySelector('.login .form p.message.error').textContent = 'Username or password is incorrect';
+        this.shadowRoot.querySelector('.login .form p.message.error').textContent = 'Username or password is incorrect';
         throw new Error('Network response was not ok ' + response.statusText);
       }
 

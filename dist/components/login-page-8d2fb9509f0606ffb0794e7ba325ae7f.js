@@ -1,4 +1,4 @@
-import { LoginForm } from './login-form-2195ac1a26a986d667b87e52b2f51b9d.js';
+import { LoginForm } from './login-form-35271eff84a6d147ab1b995ceea43287.js';
 
 export class LoginPage extends HTMLElement {
   constructor() {

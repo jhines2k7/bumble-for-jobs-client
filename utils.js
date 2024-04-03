@@ -1,6 +1,6 @@
-const domain = 'https://bfj.generalsolutions43.com';
+export const domain = 'https://bfj.generalsolutions43.com';
 
-function isTokenExpired() {
+export function isTokenExpired() {
   const token = localStorage.getItem('access_token');
   if (token) {
     const payload = JSON.parse(atob(token.split('.')[1]));
@@ -16,7 +16,7 @@ function isTokenExpired() {
   }
 }
 
-async function getJobPosts(page, liked) {
+export async function getJobPosts(page, liked) {
   let url = `${domain}/job-posts?page=${page}`;
   
   if(liked) {
@@ -43,7 +43,7 @@ async function getJobPosts(page, liked) {
   return data;
 }
 
-async function refreshAccessToken() {
+export async function refreshAccessToken() {
   try {
     console.debug('Refreshing access token...')
 
@@ -72,7 +72,7 @@ async function refreshAccessToken() {
   }
 }
 
-function logout() {
+export function logout() {
   fetch(`${domain}/logout`, {
     method: 'POST',
     headers: {
@@ -95,7 +95,7 @@ function logout() {
   });
 }
 
-function parseJwt(token) {
+export function parseJwt(token) {
   try {
     // Split the token into its parts
     const base64Url = token.split('.')[1];
