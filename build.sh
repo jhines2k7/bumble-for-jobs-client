@@ -70,6 +70,9 @@ cp $html_file $dist_folder
 # Copy the utils file to the dist folder
 cp utils.js $dist_folder
 
+# Copy the constants file to the dist folder
+cp constants.js $dist_folder
+
 # Generate a hash of the JavaScript file
 filehash=$(md5sum $app_file | cut -d ' ' -f 1)
 

@@ -1,11 +1,11 @@
 const router = new Navigo('/', { hash: true });
 
-// import './components/app-header-4c97e525733513254f17d3c62ee17ebe.js';
+// import './components/app-header-73467f9901dfcf313bf7b57118b039ca.js';
 // import './components/app-footer-29a53a22855a7207fbf6ec7ee202312c.js';
 import { LoginPage } from './components/login-page-8d2fb9509f0606ffb0794e7ba325ae7f.js';
-import './components/job-posts-page-53535383ae0acf9ae6df67339c8fde9e.js';
-import './components/sliding-menu-482ef9889f91767a4eaca051de39b1dc.js';
-// import './components/job-post-page-eaf88bf9d130914ae721533dd7107d9e.js';
+import { JobPostsPage } from './components/job-posts-page-b11200f06b5a79eeeb082ed1e4aad78d.js';
+import './components/sliding-menu-49cce9a3a357ddf35f7741d4da3ec534.js';
+import { JobPostPage } from './components/job-post-page-4a31c5bd22b0b59e8ea3cb6d4d6b570c.js';
 // import './components/job-seeker-page.js';
 // import './components/compatibility-analysis-page.js';
 // import './components/chat-page.js';
@@ -21,22 +21,18 @@ router
       refreshAccessToken().then(data => {
         localStorage.setItem('access_token', data.access_token);
 
-        const token = parseJwt(data.access_token);
-
-        router.navigate(`/foryou/${token.user_id}/${token.state}?page=1`);
+        router.navigate(`/foryou?page=1`);
       }).catch(error => {
         console.error('Error refreshing token:', error);
       });
     } else {
-      const token = localStorage.getItem('access_token');
-      router.navigate(`/foryou/${token.user_id}/${token.state}?page=1`);
+      router.navigate(`/foryou?page=1`);
     }
   })
   .on('/login', () => {
     const token = localStorage.getItem('access_token');
     if (token) {
-      const decodedToken = parseJwt(token);
-      router.navigate(`/foryou/${decodedToken.user_id}/${decodedToken.state}?page=1`);
+      router.navigate(`/foryou?page=1`);
     }
 
     const loginPage = new LoginPage();
@@ -44,8 +40,10 @@ router
     document.getElementById('app').innerHTML = '';
     document.getElementById('app').appendChild(loginPage);
   })
-  .on('/foryou/:userId/:state', (params) => {
+  .on('/foryou', () => {
     (async () => {
+      document.getElementById('app').innerHTML = '';
+
       let token;
 
       if(isTokenExpired()) {
@@ -65,15 +63,22 @@ router
       }
 
       if (token.roles.includes('EMPLOYER')) {
-        document.getElementById('app').innerHTML = `<job-posts-page></job-posts-page>`;
+        const jobPostsPage = new JobPostsPage();
+        jobPostsPage.router = router;
+        document.getElementById('app').appendChild(jobPostsPage);
       } else {
         document.getElementById('app').innerHTML = `<job-post-page></job-post-page>`;
       }
     })();
   })
-  /*
-  .on('/job-seekers/:jobPostId', (params) => {
-    document.getElementById('app').innerHTML = `<job-seeker-page job-post-id="${params.jobPostId}"></job-seeker-page>`;
+  .on('/job-post/:jobPostId', (match) => {
+    document.getElementById('app').innerHTML = '';
+
+    const jobPostPage = new JobPostPage();
+    jobPostPage.router = router;
+    jobPostPage.jobPostId = match.data.jobPostId;
+    
+    document.getElementById('app').appendChild(jobPostPage);
   })
   .on('/compatibility-analysis/:analysisId', (params) => {
     const token = localStorage.getItem('access_token');
@@ -84,6 +89,7 @@ router
       document.getElementById('app').innerHTML = `<compatibility-analysis-page analysis-id="${params.analysisId}"></compatibility-analysis-page>`;
     }
   })
+  /*
   .on('/chat', (params) => {
     document.getElementById('app').innerHTML = `<chat-page job-seeker-id="${params.job_seeker_id}" employer-id="${params.employer_id}" job-post-id="${params.job_post_id}"></chat-page>`;
   })

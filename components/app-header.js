@@ -1,9 +1,19 @@
 const styles = new CSSStyleSheet();
 styles.replaceSync(`
   :host {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
     display: flex;
     align-items: center;
-    margin-bottom: 20px;
+    background-color: #f0f0f0;
+    padding: 10px 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  * {
+    outline: 1px solid red;
   }
 
   h1 {
@@ -38,18 +48,19 @@ export class AppHeader extends HTMLElement {
       <div class="avatar"></div>
       <h1></h1>
     `;
-
-    this.hammer = new Hammer(this.shadowRoot.querySelector('sliding-menu'));
-
-    this.slidingMenu = this.shadowRoot.querySelector('sliding-menu');
   }
-
+  
   connectedCallback() {
+    this.hammer = new Hammer(this.shadowRoot.querySelector('sliding-menu'));
+    this.slidingMenu = this.shadowRoot.querySelector('sliding-menu');
+
     this.toggleBtn = this.shadowRoot.querySelector('.avatar');
     this.toggleBtn.addEventListener('click', this.toggleSlidingMenu.bind(this));
+
+    this.shadowRoot.querySelector('h1').textContent = this.pageTitle;
   }
 
-  toggleSlidingMenu(userId, state) {
+  toggleSlidingMenu() {
     // create a transparent overlay to prevent scrolling and clicking
     let overlay = document.createElement('div');
     // set the height of the overlay to 100% of the viewport
@@ -69,8 +80,8 @@ export class AppHeader extends HTMLElement {
       overlay.remove();
       this.slidingMenu.classList.remove('move-right');
     });
-    // append the overlay to the body
-    document.body.appendChild(overlay);
+
+    this.shadowRoot.appendChild(overlay);
 
     this.slidingMenu.classList.add('move-right');
     

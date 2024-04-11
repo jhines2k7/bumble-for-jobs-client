@@ -1,0 +1,1 @@
+export const DOMAIN = 'https://bfj.generalsolutions43.com';

@@ -1,4 +1,5 @@
-import { domain, parseJwt } from '../utils.js';
+import { parseJwt } from '../utils.js';
+import { DOMAIN } from '../constants.js';
 
 const styles = new CSSStyleSheet();
 styles.replaceSync(`
@@ -106,7 +107,7 @@ export class LoginForm extends HTMLElement {
     const password = this.shadowRoot.querySelector('.login-form input[type="password"]').value;
 
     try {
-      const response = await fetch(`${domain}/login`, {
+      const response = await fetch(`${DOMAIN}/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

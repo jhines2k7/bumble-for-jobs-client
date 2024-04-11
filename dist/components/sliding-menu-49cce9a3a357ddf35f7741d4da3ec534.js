@@ -1,5 +1,13 @@
 const styles = new CSSStyleSheet();
 styles.replaceSync(`
+  :host {
+    left: -300px;
+    top: 0;
+    transition: transform 0.5s ease;
+    position: fixed;
+    z-index: 200;
+  }  
+  
   .avatar {
     width: 40px;
     min-width: 40px;
@@ -33,16 +41,6 @@ styles.replaceSync(`
     justify-content: space-between;
     margin: 20px auto;
     width: 75%;
-  }
-  
-  :host {
-    position: fixed;
-    left: -300px;
-    top: 0;
-    z-index: 200;
-    transition: transform 0.5s ease;
-    user-select: none;
-    touch-action: none;
   }
   
   .menu{

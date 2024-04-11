@@ -36,6 +36,22 @@
   <script src="app.js" type="module"></script>
 </head>
 <body>
+  <template id=job-post-list-item-template>
+    <div class="job-post-list-item">
+      <p class="title"></p>
+      <p class="location"></p>
+      <p class="seeker-count"></p>
+    </div>
+  </template>
+
+  <template id=job-seeker-list-item-template>
+    <div class="job-seeker-list-item">
+      <p class="username"></p>
+      <p class="normalized-score"></p><span>/100</span>
+      <p class="location"></p>
+    </div>
+  </template>
+
   <div id="app"></div>
 </body>
 </html>

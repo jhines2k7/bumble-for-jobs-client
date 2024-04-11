@@ -1,4 +1,4 @@
-export const domain = 'https://bfj.generalsolutions43.com';
+import { DOMAIN } from './constants.js';
 
 export function isTokenExpired() {
   const token = localStorage.getItem('access_token');
@@ -16,38 +16,11 @@ export function isTokenExpired() {
   }
 }
 
-export async function getJobPosts(page, liked) {
-  let url = `${domain}/job-posts?page=${page}`;
-  
-  if(liked) {
-    url = `${domain}/job-posts?page=${page}&liked=${liked}`;
-  }
-
-  const response = await fetch(url, {
-    method: 'GET',
-    headers: {
-      'Authorization': `Bearer ${localStorage.getItem('access_token')}`
-    }
-  });
-
-  if (!response.ok) {
-    if (response.status === 401) {
-      router.navigate('/login');
-    }
-
-    throw new Error('Network response was not ok ' + response.statusText);
-  }
-
-  const data = await response.json();
-
-  return data;
-}
-
 export async function refreshAccessToken() {
   try {
     console.debug('Refreshing access token...')
 
-    const response = await fetch(`${domain}/token/refresh`, {
+    const response = await fetch(`${DOMAIN}/token/refresh`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('refresh_token')}`

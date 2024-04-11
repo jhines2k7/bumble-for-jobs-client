@@ -1,5 +1,5 @@
-import { AppHeader } from './app-header.js';
-import { JobSeekerListItem } from './job-seeker-list-item.js';
+import { AppHeader } from './app-header-73467f9901dfcf313bf7b57118b039ca.js';
+import { JobSeekerListItem } from './job-seeker-list-item-7ea9c405b1c105bf423b6454bd0c601b.js';
 import { DOMAIN } from '../constants.js';
 
 const styles = new CSSStyleSheet();

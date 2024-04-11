@@ -3,9 +3,9 @@ const router = new Navigo('/', { hash: true });
 // import './components/app-header.js';
 // import './components/app-footer.js';
 import { LoginPage } from './components/login-page.js';
-import './components/job-posts-page.js';
+import { JobPostsPage } from './components/job-posts-page.js';
 import './components/sliding-menu.js';
-// import './components/job-post-page.js';
+import { JobPostPage } from './components/job-post-page.js';
 // import './components/job-seeker-page.js';
 // import './components/compatibility-analysis-page.js';
 // import './components/chat-page.js';
@@ -21,22 +21,18 @@ router
       refreshAccessToken().then(data => {
         localStorage.setItem('access_token', data.access_token);
 
-        const token = parseJwt(data.access_token);
-
-        router.navigate(`/foryou/${token.user_id}/${token.state}?page=1`);
+        router.navigate(`/foryou?page=1`);
       }).catch(error => {
         console.error('Error refreshing token:', error);
       });
     } else {
-      const token = localStorage.getItem('access_token');
-      router.navigate(`/foryou/${token.user_id}/${token.state}?page=1`);
+      router.navigate(`/foryou?page=1`);
     }
   })
   .on('/login', () => {
     const token = localStorage.getItem('access_token');
     if (token) {
-      const decodedToken = parseJwt(token);
-      router.navigate(`/foryou/${decodedToken.user_id}/${decodedToken.state}?page=1`);
+      router.navigate(`/foryou?page=1`);
     }
 
     const loginPage = new LoginPage();
@@ -44,8 +40,10 @@ router
     document.getElementById('app').innerHTML = '';
     document.getElementById('app').appendChild(loginPage);
   })
-  .on('/foryou/:userId/:state', (params) => {
+  .on('/foryou', () => {
     (async () => {
+      document.getElementById('app').innerHTML = '';
+
       let token;
 
       if(isTokenExpired()) {
@@ -65,15 +63,22 @@ router
       }
 
       if (token.roles.includes('EMPLOYER')) {
-        document.getElementById('app').innerHTML = `<job-posts-page></job-posts-page>`;
+        const jobPostsPage = new JobPostsPage();
+        jobPostsPage.router = router;
+        document.getElementById('app').appendChild(jobPostsPage);
       } else {
         document.getElementById('app').innerHTML = `<job-post-page></job-post-page>`;
       }
     })();
   })
-  /*
-  .on('/job-seekers/:jobPostId', (params) => {
-    document.getElementById('app').innerHTML = `<job-seeker-page job-post-id="${params.jobPostId}"></job-seeker-page>`;
+  .on('/job-post/:jobPostId', (match) => {
+    document.getElementById('app').innerHTML = '';
+
+    const jobPostPage = new JobPostPage();
+    jobPostPage.router = router;
+    jobPostPage.jobPostId = match.data.jobPostId;
+    
+    document.getElementById('app').appendChild(jobPostPage);
   })
   .on('/compatibility-analysis/:analysisId', (params) => {
     const token = localStorage.getItem('access_token');
@@ -84,6 +89,7 @@ router
       document.getElementById('app').innerHTML = `<compatibility-analysis-page analysis-id="${params.analysisId}"></compatibility-analysis-page>`;
     }
   })
+  /*
   .on('/chat', (params) => {
     document.getElementById('app').innerHTML = `<chat-page job-seeker-id="${params.job_seeker_id}" employer-id="${params.employer_id}" job-post-id="${params.job_post_id}"></chat-page>`;
   })
