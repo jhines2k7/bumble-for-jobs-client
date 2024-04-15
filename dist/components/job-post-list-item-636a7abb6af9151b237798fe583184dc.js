@@ -73,7 +73,6 @@ export class JobPostListItem extends HTMLElement {
     this.shadowRoot.querySelector('.location').textContent = location || '';
     this.shadowRoot.querySelector('.seeker-count').textContent = count || '';
     
-    console.log('id:', id)
     this.addEventListener('click', this.handleClick.bind(this, id));
   }
 

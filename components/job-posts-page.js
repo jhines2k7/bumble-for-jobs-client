@@ -28,6 +28,9 @@ export class JobPostsPage extends HTMLElement {
 
     if (!response.ok) {
       if (response.status === 401) {
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('refresh_token');
+        
         this.router.navigate('/login');
       }
 
@@ -38,6 +41,7 @@ export class JobPostsPage extends HTMLElement {
 
     const header = new AppHeader();
     header.pageTitle = 'Job Posts';
+
     this.shadowRoot.appendChild(header);
 
     data.forEach(post => {

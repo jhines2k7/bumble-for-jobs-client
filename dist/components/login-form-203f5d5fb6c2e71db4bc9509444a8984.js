@@ -5,6 +5,10 @@ const styles = new CSSStyleSheet();
 styles.replaceSync(`
   @import url(https://fonts.googleapis.com/css?family=Roboto:300);
 
+  * {
+    outline: 1px solid red;
+  }
+
   .login {
     font-family: "Roboto", sans-serif;
     -webkit-font-smoothing: antialiased;
@@ -128,7 +132,7 @@ export class LoginForm extends HTMLElement {
         localStorage.setItem('refresh_token', data.refresh_token);
 
         const token = parseJwt(data.access_token);
-        this.router.navigate(`/foryou/${token.user_id}/${token.state}?page=1`);
+        this.router.navigate(`/foryou?page=1`);
       } else {
         throw new Error('Access token or refresh token not found in response');
       }

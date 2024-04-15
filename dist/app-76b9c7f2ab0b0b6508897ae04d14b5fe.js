@@ -1,14 +1,14 @@
 const router = new Navigo('/', { hash: true });
 
-// import './components/app-header.js';
-// import './components/app-footer.js';
-import '/components/sliding-menu.js';
-import './components/interaction-controls.js';
-import { LoginPage } from './components/login-page.js';
-import { JobPostsPage } from './components/job-posts-page.js';
-import { JobPostPage } from './components/job-post-page.js';
+// import './components/app-header-2fb9b9110cf9458dd9b2fbf3160b6894.js';
+// import './components/app-footer-29a53a22855a7207fbf6ec7ee202312c.js';
+import '/components/sliding-menu-713e38244c4d292370dc4d5aa6460b17.js';
+import './components/interaction-controls-785f7ef5d0aab8cbddcb152786a31906.js';
+import { LoginPage } from './components/login-page-8d2fb9509f0606ffb0794e7ba325ae7f.js';
+import { JobPostsPage } from './components/job-posts-page-585c28dde18e56c2caf88d4080d62613.js';
+import { JobPostPage } from './components/job-post-page-91ac6e59c747e71cfe77546acf5a6d52.js';
 // import './components/job-seeker-page.js';
-import { CompatibilityAnalysisPage } from './components/compatibility-analysis-page.js';
+import { CompatibilityAnalysisPage } from './components/compatibility-analysis-page-8b7112675cbc61eefbdf4fa54875bd37.js';
 // import './components/chat-page.js';
 // import './components/upload-page.js';
 // import './components/profile-page.js';

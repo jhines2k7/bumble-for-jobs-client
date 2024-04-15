@@ -63,6 +63,8 @@ export class AppHeader extends HTMLElement {
   toggleSlidingMenu() {
     // create a transparent overlay to prevent scrolling and clicking
     let overlay = document.createElement('div');
+    // give overlay an id of 'overlay'
+    overlay.id = 'overlay';
     // set the height of the overlay to 100% of the viewport
     overlay.style.height = '100vh';
     // position the overlay to the left of the screen

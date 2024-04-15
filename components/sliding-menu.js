@@ -6,7 +6,11 @@ styles.replaceSync(`
     transition: transform 0.5s ease;
     position: fixed;
     z-index: 200;
-  }  
+  }
+
+  * {
+    outline: 1px solid red;
+  }
   
   .avatar {
     width: 40px;
@@ -99,21 +103,23 @@ export class SlidingMenu extends HTMLElement {
     `;
 
     this.shadowRoot.getElementById('preferences-btn').addEventListener('click', () => {
-      router.navigate(`/preferences/${userId}/${state}`);
+      this.router.navigate(`/preferences/${userId}/${state}`);
     });
 
     this.shadowRoot.getElementById('settings-btn').addEventListener('click', () => {
-      var overlay = document.body.lastElementChild;
-      overlay.remove();
+      const logoutEvent = new CustomEvent('logout-event', {
+        detail: { /* any data you want to pass */ },
+        bubbles: true,
+        composed: true
+      });
+      
+      this.dispatchEvent(logoutEvent);
 
-      this.slidingMenu = this.shadowRoot.querySelector(this);
-      this.slidingMenu.classList.toggle('move-right');
-
-      logout();
+      this.classList.toggle('move-right');
     });
 
     this.shadowRoot.getElementById('profile-btn').addEventListener('click', () => {
-      router.navigate(`/profile/${userId}/${state}`);
+      this.router.navigate(`/profile/${userId}/${state}`);
     });
   }
 }

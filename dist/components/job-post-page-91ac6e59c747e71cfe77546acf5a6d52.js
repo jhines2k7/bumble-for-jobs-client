@@ -1,4 +1,4 @@
-import { AppHeader } from './app-header-73467f9901dfcf313bf7b57118b039ca.js';
+import { AppHeader } from './app-header-2fb9b9110cf9458dd9b2fbf3160b6894.js';
 import { JobSeekerListItem } from './job-seeker-list-item-7ea9c405b1c105bf423b6454bd0c601b.js';
 import { DOMAIN } from '../constants.js';
 
@@ -25,7 +25,6 @@ export class JobPostPage extends HTMLElement {
   }
 
   async connectedCallback() {
-
     const response = await fetch(`${DOMAIN}/job-post/${this.jobPostId}`, {
       method: 'GET',
       headers: {

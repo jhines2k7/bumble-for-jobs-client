@@ -25,7 +25,6 @@ export class JobPostPage extends HTMLElement {
   }
 
   async connectedCallback() {
-
     const response = await fetch(`${DOMAIN}/job-post/${this.jobPostId}`, {
       method: 'GET',
       headers: {
